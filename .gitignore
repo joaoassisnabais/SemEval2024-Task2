@@ -127,6 +127,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.DS_Store
 
 # Spyder project settings
 .spyderproject
@@ -149,8 +150,23 @@ dmypy.json
 # pytype static type analyzer
 .pytype/
 
+
 # Cython debug symbols
 cython_debug/
+
+# Big Datasets
+*.zip
+datasets/TREC2021/
+datasets/TREC2022/
+datasets/TREC2023/
+datasets/SemEval2023/
+models/
+mistakes/
+SemEval_base/
+data_json/
+combination_output/
+args_output/
+wandb
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
