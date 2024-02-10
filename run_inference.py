@@ -1,15 +1,13 @@
-import os
 import argparse
 import json
 import torch
+
+# Local files
 import GA_evaluation
 
+# Model Libs
 from transformers import GPTQConfig, LlamaTokenizer, LlamaForCausalLM, AutoTokenizer, AutoModelForCausalLM
 from peft import LoraConfig, PeftModel, prepare_model_for_kbit_training, get_peft_model
-
-def safe_open_w(path: str):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    return open(path, 'w', encoding='utf8')
 
 def main():
     parser = argparse.ArgumentParser()
@@ -61,7 +59,7 @@ def main():
 
     if args.task == "output_labels":
         GA_evaluation.output_prompt_labels(model, tokenizer, queries, prompt, args, args.used_set)
-        
+
     elif args.task == "evaluate":
         GA_evaluation.full_evaluate_prompt(model, tokenizer, queries, qrels, "best_combination_prompt", prompt, args, args.used_set)
 

@@ -7,7 +7,19 @@ In order to fully understand the scope of our work, we recommend reading our Sys
 
 ## Repository Setup
 
-TO:DO
+```bash
+├── corpus/  # Contains the CT corpus
+├── prompts/ # Contains all used prompts
+├── qrels/   # Contains all qrels files
+├── queries/ # Contains all query files
+├── finetune_Mistral.py
+├── TODO.py
+├── parsel_qrels2queries # Script to parse queries into the intended qrel form
+├── README.md
+├── run_inference.py # Script to use the Mistral model to run inference
+├── utils.py # General purpose util functions
+└── .gitignore
+```
 
 ## Task Description
 
@@ -15,7 +27,33 @@ TO:DO
 
 ### Available Data
 
+All sets are balanced in labels, having 50% of Entailment and Contradiction samples.
+
+The Dev and Train sets are the same as in the SemEval2023 Task7. The Pratice-test includes dev-set, whilst the Test set includes several rephrasing of the same queries, in order to test Faithfullness and Consistency.
+
+| **Set**        | #Samples | Single | Comparison |
+|:-------------- |:--:|:--:|:--:|
+| Train          | 1700     | 1035   | 665        |
+| Dev            | 200      | 140    | 60         | 
+| Pratice-Test   | 2142     | 1526   | 616        |
+| Test           | TODO     | TODO   | TODO        |
+
+We also expanded sets in order to train the model on additional data:
+
+-
+-
+-
+
 TO:DO
+
+| **Set**                | #Samples | Single | Comparison  |
+|:-------------- |:--:|:--:|:--:|
+| TREC-synthetic         | TODO     | TODO   | TODO        |
+| Train-manual-expand    | TODO     | TODO   | TODO        | 
+| Train-synthetic-expand | TODO     | TODO   | TODO        |
+
+
+
 
 ## Experimental Results
 
