@@ -43,10 +43,10 @@ The Pratice-test and Test set are not balanced, being heavily (65.92% and 66.53%
 
 Both the Pratice-test and the test set include data augmentation of their original queries, by using textual alteration techniques, some of which preserve and others that alter the intended label for the query.
 
-| **Alteration** | Paraphrase | Contradiction | Text_appended  | Numerical_contradiction | Numerical_paraphrase |
-|:-------------- |:--:|:--:|:--:|:--:|:--:|
-| Pratice-Test   | 600        | 600           | 600            | 78                      | 64                   |
-| Test           | 1500       | 1500          | 1500           | 276                     | 224                  |
+| **Alteration**   | Paraphrase | Contradiction | Text_App  | Num_contra | Num_para |
+|:--------------   |:--:|:--:|:--:|:--:|:--:|
+| Pratice-Test     | 600        | 600           | 600       | 78         | 64       |
+| Test             | 1500       | 1500          | 1500      | 276        | 224      |
 
 | **Type of Alteration** | #Total Number | Preserving    | Altering  |
 |:-------------- |:--:|:--:|:--:|
@@ -64,7 +64,7 @@ We also expanded sets in order to train the model on additional data:
 
 | **Set**                | #Samples | Single | Comparison  |
 |:-------------- |:--:|:--:|:--:|
-| TREC-synthetic         | TODO     | TODO   | TODO        |
+| TREC-synthetic         | 1630     | 1542   | 88          |
 | Train-manual-expand    | TODO     | TODO   | TODO        | 
 | Train-synthetic-expand | TODO     | TODO   | TODO        |
 

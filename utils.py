@@ -40,4 +40,4 @@ def dataset_stats(dataset_path : str) -> None:
     for line in output_prints:
         print(line)
 
-#dataset_stats('qrels/qrels2024_TREC-synthetic.json')
+dataset_stats('qrels/qrels2024_TREC-synthetic.json')
