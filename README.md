@@ -27,24 +27,40 @@ TO:DO
 
 ### Available Data
 
-All sets are balanced in labels, having 50% of Entailment and Contradiction samples.
-
-The Dev and Train sets are the same as in the SemEval2023 Task7. The Pratice-test includes dev-set, whilst the Test set includes several rephrasing of the same queries, in order to test Faithfullness and Consistency.
+The Dev and Train sets are balanced in labels, having 50% of Entailment and Contradiction samples.
 
 | **Set**        | #Samples | Single | Comparison |
 |:-------------- |:--:|:--:|:--:|
 | Train          | 1700     | 1035   | 665        |
-| Dev            | 200      | 140    | 60         | 
-| Pratice-Test   | 2142     | 1526   | 616        |
-| Test           | TODO     | TODO   | TODO        |
+| Dev            | 200      | 140    | 60         |
+
+The Pratice-test and Test set are not balanced, being heavily (65.92% and 66.53% respectively) slated towards Contradictions.
+
+| **Set**        | #Samples | Single | Comparison  | Entailment | Contradiction |
+|:-------------- |:--:|:--:|:--:|:--:|:--:|
+| Pratice-Test   | 2142     | 1526   | 616         | 730        | 1412          |
+| Test           | 5500     | 2553   | 2947        | 1841       | 3659          |
+
+Both the Pratice-test and the test set include data augmentation of their original queries, by using textual alteration techniques, some of which preserve and others that alter the intended label for the query.
+
+| **Alteration** | Paraphrase | Contradiction | Text_appended  | Numerical_contradiction | Numerical_paraphrase |
+|:-------------- |:--:|:--:|:--:|:--:|:--:|
+| Pratice-Test   | 600        | 600           | 600            | 78                      | 64                   |
+| Test           | 1500       | 1500          | 1500           | 276                     | 224                  |
+
+| **Type of Alteration** | #Total Number | Preserving    | Altering  |
+|:-------------- |:--:|:--:|:--:|
+| Pratice-Test           | 1942          | 1606          | 336       | 
+| Test                   | 5000          | 4136          | 864       | 
+
+The Pratice-test also includes the dev-set. whilst the Test set includes several rephrasing of the same queries, in order to test Faithfullness and Consistency.
+
 
 We also expanded sets in order to train the model on additional data:
 
 -
 -
 -
-
-TO:DO
 
 | **Set**                | #Samples | Single | Comparison  |
 |:-------------- |:--:|:--:|:--:|
