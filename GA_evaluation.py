@@ -1,22 +1,30 @@
-import os
 import json
 import torch
 import typing
-import random
 import re
 import argparse
-
+# Local Files
+from utils import safe_open_w
+# Util libs
 from datetime import datetime
 from tqdm import tqdm
+# Model libs
 from sklearn.metrics import f1_score, precision_score, recall_score
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 ENTAILMENT_LABELS = {"entailment", "yes", "y"}
 CONTRADICTION_LABELS = {"contradiction", "no", "not", "n"}
 
-def safe_open_w(path: str):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    return open(path, 'w', encoding='utf8')
+def textlabel_2_binarylabel(text_label: list[str]) -> int:
+    for label in text_label:
+        if label.lower() in ENTAILMENT_LABELS:
+            return 1
+        elif label.lower() in CONTRADICTION_LABELS:
+            return 0
+    return 1 # In case of no label, default to Entailment
+
+def label_2_SemEval2024(labels : dict) -> dict:
+    return {q_id : {"Prediction" : "Entailment" if labels[q_id] == 1 else "Contradiction"} for q_id in labels}
 
 def extract_info_from_query(query : dict) -> dict:
     relevant_info = {}
@@ -31,29 +39,7 @@ def generate_query_from_prompt(text_to_replace: dict, prompt: str) -> str:
     prompt = prompt.replace("$hypothesis", text_to_replace["hypothesis"])
     return prompt
 
-ENTAILMENT_LABELS = {"entailment", "yes", "y"}
-CONTRADICTION_LABELS = {"contradiction", "no", "not", "n"}
 
-def textlabel_2_binarylabel(text_label: list[str]) -> int:
-    for label in text_label:
-        if label.lower() in ENTAILMENT_LABELS:
-            return 1
-        elif label.lower() in CONTRADICTION_LABELS:
-            return 0
-    #print(f'Text label: [{text_label=}.] This label output a random option because the label was not found.')
-    #return random.randint(0,1)
-    return 1
-
-def label_2_SemEval2024(labels : dict) -> dict:
-    res = {}
-    for q_id in labels:
-        pred = "None" # random.choice(["Entailment", "Contradiction"])
-        if labels[q_id] == 1:
-            pred = "Entailment"
-        elif labels[q_id] == 0:
-            pred = "Contradiction"
-        res[q_id] = {"Prediction" : pred}
-    return res
 
 def create_qid_prompt_label_dict(queries : dict, qrels : dict, prompt : str) -> dict:
     queries_dict = {}
@@ -109,7 +95,6 @@ def calculate_metrics(pred_labels : dict, gold_labels : dict) -> dict:
     res_labels = [[],[]]
     mistakes = []
     for q_id in pred_labels:
-        #print(f'{gold_labels[q_id]["gold_label"]=} {pred_labels[q_id]=}')
         res_labels[0].append(gold_labels[q_id]["gold_label"])
         res_labels[1].append(pred_labels[q_id])
         if res_labels[0][-1] != res_labels[1][-1]:

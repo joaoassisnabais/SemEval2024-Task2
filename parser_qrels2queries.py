@@ -1,9 +1,6 @@
 import json
 import argparse
-
-# Local Files
 from utils import safe_open_w
-
 from tqdm import tqdm
 
 if __name__ == '__main__':
