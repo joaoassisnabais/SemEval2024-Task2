@@ -1,4 +1,4 @@
-import sys, os
+import os
 import wandb
 import json
 import torch
@@ -7,6 +7,7 @@ import loralib as lora
 
 # Local Files
 from GA_evaluation import create_qid_prompt_label_dict
+from utils import safe_open_w, create_path
 
 # Util libs
 from datetime import datetime
@@ -18,21 +19,6 @@ from typing import List, Type, Optional
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, AutoTokenizer, TrainingArguments
 from peft import LoraConfig, AutoPeftModelForCausalLM, PeftModel, prepare_model_for_kbit_training, get_peft_model
 from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
-
-
-def safe_open_w(path: str):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    return open(path, 'w', encoding='utf8')
-
-def create_path(path : str) -> None:
-    """
-    Creates a path if it does not exist and asserts that it is a directory.
-
-    Args:
-        path (str): path to create
-    """
-    os.makedirs(path, exist_ok=True)
-    assert os.path.isdir(path), f'No such dir: {path}'
 
 def preprocess_dataset(args : argparse, prompt : str , split : str):
     # Load JSON

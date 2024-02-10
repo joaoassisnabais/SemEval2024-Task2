@@ -44,9 +44,9 @@ def main():
         model = model.merge_and_unload()
     else:
        model = AutoModelForCausalLM.from_pretrained(
-        args.model, low_cpu_mem_usage=True,
-        return_dict=True, torch_dtype=torch.bfloat16,
-        device_map= {"": 0}
+            args.model, low_cpu_mem_usage=True,
+            return_dict=True, torch_dtype=torch.bfloat16,
+            device_map= {"": 0}
        )
 
     tokenizer = AutoTokenizer.from_pretrained(args.model)
