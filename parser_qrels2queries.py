@@ -5,8 +5,8 @@ from tqdm import tqdm
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input', type=str, help='path to input dir/file', default='qrels/qrels2024_TREC-synthetic.json')
-    parser.add_argument('--output', type=str, help='path to output dir/file', default='queries/queries2024_TREC-synthetic.json')
+    parser.add_argument('--input', type=str, help='path to input dir/file', default='qrels/qrels2024_train-full-synthetic-expand.json')
+    parser.add_argument('--output', type=str, help='path to output dir/file', default='queries/queries2024_train-full-synthetic-expand.json')
     parser.add_argument('--corpus', type=str, help='path to CT Corpus', default='corpus/SemEval_CT-corpus.json')
     args = parser.parse_args() 
 

@@ -40,4 +40,10 @@ def dataset_stats(dataset_path : str) -> None:
     for line in output_prints:
         print(line)
 
-dataset_stats('qrels/qrels2024_TREC-synthetic.json')
+def count_corpus_stats(corpus_path : str) -> None:
+    corpus = json.load(open(corpus_path, encoding="utf8"))
+    corpus_words = sum([len(" ".join(corpus[doc][sec]).split(" ")) for doc in corpus for sec in corpus[doc]])
+    print(f"Corpus size: {len(corpus)}")
+    print(f"Corpus words: {corpus_words} | {corpus_words//len(corpus)} words per document")
+
+#dataset_stats('qrels/qrels2024_train-synthetic.json')
