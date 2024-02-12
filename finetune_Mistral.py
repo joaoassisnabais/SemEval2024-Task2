@@ -10,9 +10,7 @@ from GA_evaluation import create_qid_prompt_label_dict
 from utils import safe_open_w, create_path
 
 # Util libs
-from datetime import datetime
 from datasets.arrow_dataset import Dataset
-from tqdm import tqdm
 from typing import List, Type, Optional
 
 # Model Libs
@@ -63,7 +61,6 @@ def parse_args():
     parser.add_argument("--gradient_accumulation_steps", type=int, default=4, help="Number of updates steps to accumulate before performing a backward/update pass.")
     parser.add_argument("--gradient_checkpointing", action="store_false", help="If True, use gradient checkpointing to save memory at the expense of slower backward pass.")
     args = parser.parse_args()
-
 
     return args
 
