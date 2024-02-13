@@ -24,9 +24,9 @@ def main():
     # Path to queries, qrels and prompt files
     parser.add_argument('--used_set', type=str, help='choose which data to use', default="test") # train | dev | test
     args = parser.parse_known_args()
-    parser.add_argument('--queries', type=str, help='path to queries file', default=f'queries/queries2024_{args.used_set}.json')
-    parser.add_argument('--qrels', type=str, help='path to qrels file', default=f'qrels/qrels2024_{args.used_set}.json')
-    parser.add_argument('--prompts', type=str, help='path to prompts file', default="prompts/Mistral_Prompt.json")
+    parser.add_argument('--queries', type=str, help='path to queries file', default=f'queries/queries2024_{args[0].used_set}.json')
+    parser.add_argument('--qrels', type=str, help='path to qrels file', default=f'qrels/qrels2024_{args[0].used_set}.json')
+    parser.add_argument('--prompts', type=str, help='path to prompts file', default="prompts/MistralPrompts.json")
 
     # Task to run
     parser.add_argument('--task', type=str, help='task to run', default='output_labels', choices=['output_labels', 'evaluate']) # output_labels | evaluate
