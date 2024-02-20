@@ -12,8 +12,9 @@ In order to fully understand the scope of our work, we recommend reading our Sys
 ├── prompts/ # Contains all used prompts
 ├── qrels/   # Contains all qrels files
 ├── queries/ # Contains all query files
-├── finetune_Mistral.py
-├── TODO.py
+├── eval_prompt.py # Contains all functions to generate text and evaluate a given prompt
+├── finetune_Mistral.py # Training functions for Mistral-7b
+├── label_prompt_funcs.py # Contains all functions that format queries, outputted labels and prompts
 ├── parsel_qrels2queries # Script to parse queries into the intended qrel form
 ├── README.md
 ├── run_inference.py # Script to use the Mistral model to run inference
@@ -23,7 +24,7 @@ In order to fully understand the scope of our work, we recommend reading our Sys
 
 ## Task Description
 
-TO:DO
+TO:DO - For now info in the System Description Paper
 
 ### Available Data
 
@@ -55,33 +56,29 @@ Both the Pratice-test and the test set include data augmentation of their origin
 
 The Pratice-test also includes the dev-set. whilst the Test set includes several rephrasing of the same queries, in order to test Faithfullness and Consistency.
 
-
 We also expanded sets in order to train the model on additional data:
 
--
--
--
-
-| **Set**                | #Samples | Single | Comparison  |
-|:-------------- |:--:|:--:|:--:|
-| TREC-synthetic         | 1630     | 1542   | 88          |
-| Train-manual-expand    | TODO     | TODO   | TODO        | 
-| Train-synthetic-expand | TODO     | TODO   | TODO        |
+| **Set**                | #Samples | Single | Comparison  | Entailment | Contradiction |
+|:-------------- |:--:|:--:|:--:||:--:|:--:|
+| TREC-synthetic         | 1630     | 1542   | 88          |     815    |   815         |
+| Train-manual           | 2334     | 1380   | 854         |     1167   |   1167        |
+| Train-manual-synthetic | 3720     | 2368   | 1352        |     1860   |   1860        |
+| Train-full-synthetic   | 11011    | 6705   | 4306        |     5098   |   5913        |
 
 
 ## Experimental Results
 
-TO:DO
+TO:DO - For now info in the System Description Paper
 
 ### Evaluation Criteria
 
-TO:DO
+TO:DO - For now info in the System Description Paper
 
 ### Mistral Results
 
 The model we chose to conduct most experiments on was the [Mistral-7B-Instruct-v0.2](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2) model, using the pubicly available huggingface weights, and the python libraries torch, transformers and peft. 
 
-TO:DO
+TO:DO - For now info in the System Description Paper
 
 ### T5 Base Results
 
