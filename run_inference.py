@@ -3,11 +3,11 @@ import json
 import torch
 
 # Local files
-import GA_evaluation
+import eval_prompt
 
 # Model Libs
-from transformers import GPTQConfig, LlamaTokenizer, LlamaForCausalLM, AutoTokenizer, AutoModelForCausalLM
-from peft import LoraConfig, PeftModel, prepare_model_for_kbit_training, get_peft_model
+from transformers import AutoTokenizer, AutoModelForCausalLM
+from peft import PeftModel
 
 def main():
     parser = argparse.ArgumentParser()
@@ -58,10 +58,10 @@ def main():
     prompt = json.load(open(args.prompts))["best_combination_prompt"]
 
     if args.task == "output_labels":
-        GA_evaluation.output_prompt_labels(model, tokenizer, queries, prompt, args, args.used_set)
+        eval_prompt.output_prompt_labels(model, tokenizer, queries, prompt, args, args.used_set)
 
     elif args.task == "evaluate":
-        GA_evaluation.full_evaluate_prompt(model, tokenizer, queries, qrels, "best_combination_prompt", prompt, args, args.used_set)
+        eval_prompt.full_evaluate_prompt(model, tokenizer, queries, qrels, "best_combination_prompt", prompt, args, args.used_set)
 
 if __name__ == '__main__':
     main()

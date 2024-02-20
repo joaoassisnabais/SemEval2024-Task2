@@ -69,8 +69,6 @@ We also expanded sets in order to train the model on additional data:
 | Train-synthetic-expand | TODO     | TODO   | TODO        |
 
 
-
-
 ## Experimental Results
 
 TO:DO
