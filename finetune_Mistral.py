@@ -1,6 +1,9 @@
+# ruff: noqa: E402
+
 import os
 import wandb
 import json
+#os.environ["CUDA_VISIBLE_DEVICES"] = "0"    # Set the GPU to use
 import torch
 import argparse
 import typing
@@ -39,7 +42,7 @@ def parse_args():
     # I/O paths for models, CT, queries and qrels
     parser.add_argument('--save_dir', type=str, default="outputs/models/run_14/", help='path to model save dir')
 
-    parser.add_argument("--used_prompt", default="prompts/", type=str)
+    parser.add_argument("--used_prompt", default="prompts/MistralPrompts.json", type=str)
     parser.add_argument("--queries", default="queries/", type=str)
     parser.add_argument("--qrels", default="qrels/", type=str)
 
@@ -64,6 +67,7 @@ def parse_args():
     return args
 
 def create_model_and_tokenizer(args : argparse):
+    
     bnb_config = BitsAndBytesConfig(
         load_in_4bit= True,
         bnb_4bit_quant_type= "nf4",
@@ -103,6 +107,17 @@ def create_model_and_tokenizer(args : argparse):
 def main():
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
     args = parse_args()
+    
+    try:
+        if torch.cuda.is_available():
+            print("Number of available GPUs:", torch.cuda.device_count())
+            for i in range(torch.cuda.device_count()):
+                name = torch.cuda.get_device_name(i)
+                print(f"  GPU {i}: {name}")
+        else:
+            raise torch.cuda.CudaError
+    except Exception as e:
+        print(f"No CUDA devices available: {e}")
 
     wandb.init(
         project="SemEval_Mistra",
@@ -116,7 +131,7 @@ def main():
 
     # Load dataset and prompt
     prompt = json.load(open(args.used_prompt))["best_combination_prompt"]
-    train_dataset = preprocess_dataset(args, prompt, "train-dev_manual-Expand")
+    train_dataset = preprocess_dataset(args, prompt, "train-manual-expand_and_dev")
     eval_dataset = preprocess_dataset(args, prompt, "dev")
 
     training_arguments = TrainingArguments(
@@ -140,9 +155,7 @@ def main():
         gradient_checkpointing= args.gradient_checkpointing,
         fp16= args.fp16,
         report_to="wandb"
-    )
-    
-    
+    )    
 
     ## Data collator for completing with "Answer: YES" or "Answer: NO"
     collator = DataCollatorForCompletionOnlyLM("Answer:", tokenizer= tokenizer)

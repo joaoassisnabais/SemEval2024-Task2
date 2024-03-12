@@ -13,6 +13,8 @@ from tqdm import tqdm
 # Model libs
 from sklearn.metrics import f1_score, precision_score, recall_score
 
+CUDA_VISIBLE_DEVICES = 0
+
 def query_inference(model : object, tokenizer : object, queries : dict) -> dict:
     res_labels = {}
     with torch.inference_mode():
