@@ -1,6 +1,5 @@
 import json
 import torch
-import typing
 import re
 
 # Local Files
@@ -13,6 +12,22 @@ from tqdm import tqdm
 # Model libs
 from sklearn.metrics import f1_score, precision_score, recall_score
 
+
+def prefix_allowed_tokens_fn(batch_id, inputs_ids, tokenizer):
+    # Get the IDs for "yes" and "no" tokens
+    yes_id = tokenizer.convert_tokens_to_ids("yes")
+    no_id = tokenizer.convert_tokens_to_ids("no")
+
+    # Create a mask with True for "yes" and "no" IDs and False for others
+    if (yes_id in inputs_ids) or (no_id in inputs_ids):
+        allowed_tokens = []
+        allowed_tokens.append(tokenizer.eos_token_id)
+    else:
+        allowed_tokens = [yes_id, no_id]
+
+    return allowed_tokens
+
+
 def query_inference(model : object, tokenizer : object, queries : dict) -> dict:
     res_labels = {}
     with torch.inference_mode():
@@ -22,12 +37,13 @@ def query_inference(model : object, tokenizer : object, queries : dict) -> dict:
             tokenized["attention_mask"] = tokenized.attention_mask.to(device="cuda")
 
             # We could use do_sample=False and disable top_k and top_p to get a deterministic output
-            outputs =  model.generate(**tokenized, max_new_tokens=50, top_k = 5, do_sample=True, pad_token_id=tokenizer.eos_token_id)
+            outputs =  model.generate(**tokenized, max_new_tokens=50, top_k = 5, do_sample=True, pad_token_id=tokenizer.eos_token_id,
+                                      prefix_allowed_tokens_fn=lambda x, y: prefix_allowed_tokens_fn(x, y, tokenizer))
 
             decoded_output = tokenizer.decode(outputs[0][tokenized["input_ids"].shape[1]:]).strip()
-            decoded_output_sub = re.sub("[,!\.]+", " ", decoded_output)
-            decoded_output_sub = re.sub("(\\n)+", " ", decoded_output_sub)
-            decoded_output_sub = re.sub("(<\/s>)+", " ", decoded_output_sub)
+            decoded_output_sub = re.sub("[,!\.]+", " ", decoded_output)     #replace punctioation with space
+            decoded_output_sub = re.sub("(\\n)+", " ", decoded_output_sub)  #replace newlines with space
+            decoded_output_sub = re.sub("(<\/s>)+", " ", decoded_output_sub)    #replace </s> (EOS token) with space
 
             res_labels[q_id] = textlabel_2_binarylabel(decoded_output_sub.split(" "))
     return res_labels
@@ -116,3 +132,14 @@ def output_prompt_labels(model : object, tokenizer : object, queries : dict, pro
     # Output results
     with safe_open_w(f'{args.output_dir}{timestamp}_{used_set}-set.json') as output_file:
         output_file.write(json.dumps(label_2_SemEval2024(pred_labels), ensure_ascii=False, indent=4))
+        
+def evaluate_without_query(pred_labels : dict, queries : dict, qrels : dict, prompt_id : str, prompt: str, args : object, used_set : str) -> dict:
+    # Replace prompt with query info
+    queries_dict = create_qid_prompt_label_dict(queries, qrels, prompt)
+
+    # Compute metrics
+    metrics, mistakes = calculate_metrics(pred_labels, queries_dict)
+    output_mistakes(args, mistakes, prompt, queries, qrels, used_set)
+    
+    output_full_metrics(args, prompt_id, prompt, used_set, metrics)
+    return metrics
