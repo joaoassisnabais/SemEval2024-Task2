@@ -14,11 +14,9 @@ from sklearn.metrics import f1_score, precision_score, recall_score
 
 
 def prefix_allowed_tokens_fn(batch_id, inputs_ids, tokenizer):
-    # Get the IDs for "yes" and "no" tokens
     yes_id = tokenizer.convert_tokens_to_ids("yes")
     no_id = tokenizer.convert_tokens_to_ids("no")
 
-    # Create a mask with True for "yes" and "no" IDs and False for others
     if (yes_id in inputs_ids) or (no_id in inputs_ids):
         allowed_tokens = []
         allowed_tokens.append(tokenizer.eos_token_id)
@@ -136,9 +134,10 @@ def output_prompt_labels(model : object, tokenizer : object, queries : dict, pro
 def evaluate_without_query(pred_labels : dict, queries : dict, qrels : dict, prompt_id : str, prompt: str, args : object, used_set : str) -> dict:
     # Replace prompt with query info
     queries_dict = create_qid_prompt_label_dict(queries, qrels, prompt)
+    pred_labels_dict = {q_id : textlabel_2_binarylabel([pred_labels[q_id]["Prediction"]]) for q_id in pred_labels}
 
     # Compute metrics
-    metrics, mistakes = calculate_metrics(pred_labels, queries_dict)
+    metrics, mistakes = calculate_metrics(pred_labels_dict, queries_dict)
     output_mistakes(args, mistakes, prompt, queries, qrels, used_set)
     
     output_full_metrics(args, prompt_id, prompt, used_set, metrics)

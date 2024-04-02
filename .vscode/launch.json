@@ -6,12 +6,12 @@
     "configurations": [
         
         {
-            "name": "Python Debugger: Current File with Arguments",
+            "name": "Python Debugger: run_inference metrics_only",
             "type": "debugpy",
             "request": "launch",
-            "program": "${file}",
+            "program": "${workspaceFolder}/run_inference.py",
             "console": "integratedTerminal",
-            "args": "${command:pickArgs}"
+            "args": ["--metrics_only"]
         }
     ]
 }
