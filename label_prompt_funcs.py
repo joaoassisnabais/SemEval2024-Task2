@@ -1,5 +1,5 @@
 import json
-import typing
+import re
 
 # Local Files
 from utils import safe_open_w
@@ -12,6 +12,17 @@ def textlabel_2_binarylabel(text_label: list[str]) -> int:
         if label.lower() in ENTAILMENT_LABELS:
             return 1
         elif label.lower() in CONTRADICTION_LABELS:
+            return 0
+    return 1 # In case of no label, default to Entailment
+
+def cotlabel_2_binarylabel(cot_label: list[str]) -> int:
+    cot_label = ''.join(cot_label)
+    match = re.search(r'FINAL\s*:\s*(YES|NO)', cot_label.upper())
+    if match:
+        final_match = match.group().replace(" ", "")
+        if final_match == "FINAL:YES":
+            return 1
+        elif final_match == "FINAL:NO":
             return 0
     return 1 # In case of no label, default to Entailment
 

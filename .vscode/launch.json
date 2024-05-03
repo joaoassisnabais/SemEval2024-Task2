@@ -11,7 +11,15 @@
             "request": "launch",
             "program": "${workspaceFolder}/run_inference.py",
             "console": "integratedTerminal",
-            "args": ["--metrics_only"]
+            "args": ["--metrics_only", "--labels", "outputs/constrained/2024-03-25_15-14_test-set.json"]
+        },
+        {
+            "name": "Python Debugger: self-consistency",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_inference.py",
+            "console": "integratedTerminal",
+            "args": ["--task", "self_consistency"]
         }
     ]
 }

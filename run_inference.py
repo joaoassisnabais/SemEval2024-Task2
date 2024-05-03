@@ -4,6 +4,7 @@ import torch
 
 # Local files
 import eval_prompt
+import self_consistency
 
 # Model Libs
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -30,13 +31,22 @@ def main():
     
     # Metrics only flag
     parser.add_argument('--metrics_only', action='store_true', help='boolean flag to set if we should run the model ot the metrics only', default=False)
-    parser.add_argument('--labels', type=str, help='path to predicted labels file', default='outputs/normal/2024-03-21_21-28_test-set.json')
+    parser.add_argument('--labels', type=str, help='path to predicted labels file', default='')
 
     # Task to run
-    parser.add_argument('--task', type=str, help='task to run', default='output_labels', choices=['output_labels', 'evaluate']) # output_labels | evaluate
+    parser.add_argument('--task', type=str, help='task to run', default='self_consistency', choices=['output_labels', 'evaluate', 'self_consistency'])
+    
+    #Self-Consistency arguments
+    parser.add_argument('--top_k', type=int, help='top k to use in inference', default=40)
+    parser.add_argument('--top_p', type=float, help='p to use in nucleus sampling', default=0)
+    parser.add_argument('--temperature', type=float, help='temperature to use in inference', default=0.5)
+    parser.add_argument('--reasoning_paths', type=int, help='number of reasoning paths to use', default=8)
 
     # Output directory
     parser.add_argument('--output_dir', type=str, help='path to output_dir', default="outputs/")
+    
+    # Attention type
+    parser.add_argument("--attention_type", type=str, help="attention type to use", default="normal", choices=["normal", "flash"])
 
     args = parser.parse_args()
 
@@ -61,6 +71,7 @@ def main():
             return_dict=True, torch_dtype=torch.bfloat16,
             device_map= {"": 0}
        )
+       model.to("cuda")
 
     tokenizer = AutoTokenizer.from_pretrained(args.model)
     tokenizer.pad_token_id = tokenizer.eos_token_id
@@ -70,7 +81,11 @@ def main():
     qrels = json.load(open(args.qrels))
     prompt = json.load(open(args.prompts))["best_combination_prompt"]
 
-    if args.task == "output_labels":
+    if args.task == "self_consistency":
+        prompt = json.load(open(args.prompts))["self_consistency_prompt"]
+        self_consistency.self_consisntency(model, tokenizer, queries, qrels, "self_consistency_prompt", prompt, args, args.used_set)        
+        
+    elif args.task == "output_labels":
         eval_prompt.output_prompt_labels(model, tokenizer, queries, prompt, args, args.used_set)
 
     elif args.task == "evaluate":

@@ -52,7 +52,7 @@ def calculate_metrics(pred_labels : dict, gold_labels : dict) -> dict:
     for q_id in pred_labels:
         res_labels[0].append(gold_labels[q_id]["gold_label"])
         res_labels[1].append(pred_labels[q_id])
-        if res_labels[0][-1] != res_labels[1][-1]:
+        if res_labels[0][-1] != res_labels[1][-1]:  # If the last added labels are different, add to mistakes
             mistakes.append({"q_id" : q_id, "gold_label" : res_labels[0][-1], "pred_label" : res_labels[1][-1]})
 
     precison_bin = precision_score(res_labels[0], res_labels[1])
