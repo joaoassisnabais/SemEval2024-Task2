@@ -108,16 +108,7 @@ def main():
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
     args = parse_args()
     
-    try:
-        if torch.cuda.is_available():
-            print("Number of available GPUs:", torch.cuda.device_count())
-            for i in range(torch.cuda.device_count()):
-                name = torch.cuda.get_device_name(i)
-                print(f"  GPU {i}: {name}")
-        else:
-            raise torch.cuda.CudaError
-    except Exception as e:
-        print(f"No CUDA devices available: {e}")
+    
 
     wandb.init(
         project="SemEval_Mistra",

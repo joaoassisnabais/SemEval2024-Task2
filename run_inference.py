@@ -9,6 +9,7 @@ import self_consistency
 # Model Libs
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
+from utils import cuda_available
 
 def main():
     parser = argparse.ArgumentParser()
@@ -52,6 +53,8 @@ def main():
 
     model = None
 
+    cuda_available()
+
     if args.metrics_only:
         queries = json.load(open(args.queries))
         qrels = json.load(open(args.qrels))
@@ -83,7 +86,7 @@ def main():
 
     if args.task == "self_consistency":
         prompt = json.load(open(args.prompts))["self_consistency_prompt"]
-        self_consistency.self_consisntency(model, tokenizer, queries, qrels, "self_consistency_prompt", prompt, args, args.used_set)        
+        self_consistency.self_consisntency(model, tokenizer, queries, qrels, "self_consistency_prompt", prompt, args, args.used_set)
         
     elif args.task == "output_labels":
         eval_prompt.output_prompt_labels(model, tokenizer, queries, prompt, args, args.used_set)

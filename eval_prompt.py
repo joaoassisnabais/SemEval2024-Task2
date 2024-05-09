@@ -71,9 +71,9 @@ def output_mistakes(args : dict, mistakes : list, prompt : str, queries : dict, 
     # Output Mistakes
     mistakes = {
         "prompt" : prompt,
-        "used_set" : used_set, 
-        "mistake_stats" : {"Total" : len(mistakes), "Single" : 0, "Comparison" : 0, "Entailment" : 0, "Contradiction" : 0}, 
-        "mistakes" : mistakes, 
+        "used_set" : used_set,
+        "mistake_stats" : {"Total" : len(mistakes), "Single" : 0, "Comparison" : 0, "Entailment" : 0, "Contradiction" : 0},
+        "mistakes" : mistakes,
         "og_queries" : {}
     }
 

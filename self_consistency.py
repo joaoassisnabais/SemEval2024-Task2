@@ -29,7 +29,7 @@ def inference(model : object, tokenizer : object, queries : dict, k=40, p=0, tem
                 current_labels.append(cotlabel_2_binarylabel([decoded_output[i]]))
             
             # Check if the majority of the reasoning paths agree
-            if (sum(current_labels) / reasoning_paths) > 1:
+            if (sum(current_labels) / reasoning_paths) >= 0.5:
                 res_labels[q_id] = 1
             else:
                 res_labels[q_id] = 0
