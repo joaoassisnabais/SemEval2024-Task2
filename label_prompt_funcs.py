@@ -51,6 +51,13 @@ def create_qid_prompt_label_dict(queries : dict, qrels : dict, prompt : str) -> 
         }
     return queries_dict
 
+def create_majority_eval_prompt(outputs : list[str], prompt : str) -> dict:
+    concatenated_outputs = ""
+    for i in range(len(outputs)):
+        concatenated_outputs += f"{i}- " + outputs[i] + "\n"
+    prompt = prompt.replace("$outputs", concatenated_outputs)
+    return concatenated_outputs
+
 def create_qdid_prompt(queries : dict, prompt : str) -> dict:
     queries_dict = {}
     for q_id in queries:
