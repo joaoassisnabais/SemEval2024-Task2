@@ -17,12 +17,11 @@ def textlabel_2_binarylabel(text_label: list[str]) -> int:
 
 def cotlabel_2_binarylabel(cot_label: list[str]) -> int:
     cot_label = ''.join(cot_label)
-    match = re.search(r'FINAL\s*:\s*(YES|NO)', cot_label.upper())
+    match = re.search(r'THE\s*FINAL\s*ANSWER\s*IS\s*:*\s*(YES|NO)', cot_label.upper())
     if match:
-        final_match = match.group().replace(" ", "")
-        if final_match == "FINAL:YES":
+        if match.group().endswith("YES"):
             return 1
-        elif final_match == "FINAL:NO":
+        elif match.group().endswith("NO"):
             return 0
     return 1 # In case of no label, default to Entailment
 
@@ -54,7 +53,7 @@ def create_qid_prompt_label_dict(queries : dict, qrels : dict, prompt : str) -> 
 def create_majority_eval_prompt(outputs : list[str], prompt : str) -> dict:
     concatenated_outputs = ""
     for i in range(len(outputs)):
-        concatenated_outputs += f"{i}- " + outputs[i] + "\n"
+        concatenated_outputs += f"\n{i+1}- " + outputs[i]
     prompt = prompt.replace("$outputs", concatenated_outputs)
     return concatenated_outputs
 
@@ -75,7 +74,7 @@ def generate_pos_prompts(mistral_prompts : dict):
 
                     prompt_combinations["combination_prompts"][f'<s>[INST]{task_id}_{ctr_id}_{statement_id}_{option_id}[/INST]'] = combination
 
-    with safe_open_w(f'prompts/MistralPromptsCombination_V2.json') as output_file:
+    with safe_open_w('prompts/MistralPromptsCombination_V2.json') as output_file:
         output_file.write(json.dumps(prompt_combinations, ensure_ascii=False, indent=4))
 
     return prompt_combinations

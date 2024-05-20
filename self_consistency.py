@@ -1,6 +1,5 @@
 import json
 import torch
-import re
 
 # Local Files
 from utils import safe_open_w
@@ -26,7 +25,7 @@ def evaluate_final_answer(model : object, tokenizer : object, decoded_outputs : 
     return cotlabel_2_binarylabel([decoded_final_output])    
 
             
-def inference(model : object, tokenizer : object, queries : dict, majority_eval_prompt_skeleton: str, terminators : list[str], k=40, p=0, temp=0.5, reasoning_paths=8) -> dict:
+def inference(model : object, tokenizer : object, queries : dict, majority_eval_prompt_skeleton: str, terminators : list[str], k=40, p=1, temp=0.7, reasoning_paths=8) -> dict:
     res_labels = {}
     with torch.inference_mode():
         for q_id in tqdm(queries):
@@ -37,13 +36,13 @@ def inference(model : object, tokenizer : object, queries : dict, majority_eval_
             decoded_output= {}
             current_labels = []
             for i in range(reasoning_paths):
-                outputs =  model.generate(**tokenized, max_new_tokens=256, temperature = temp, top_k = k,
-                                        do_sample=True, eos_token_id=terminators, top_p=p, num_return_sequences=1)
+                outputs =  model.generate(**tokenized, max_new_tokens=200, temperature = temp, top_k = k,
+                                        do_sample=True, pad_token_id=tokenizer.eos_token_id, eos_token_id=terminators, top_p=p, num_return_sequences=1)
 
                 decoded_output[i] = tokenizer.decode(outputs[0][tokenized["input_ids"].shape[1]:]).strip()
                 current_labels.append([decoded_output[i]])
             
-            res_labels[q_id] = evaluate_final_answer(decoded_output, majority_eval_prompt_skeleton)
+            res_labels[q_id] = evaluate_final_answer(model, tokenizer, decoded_output, majority_eval_prompt_skeleton, terminators)
                 
     return res_labels
 
@@ -55,9 +54,7 @@ def self_consisntency(model: object, tokenizer: object, queries: dict, qrels: di
     if model == 'meta-llama/Meta-Llama-3-8B-Instruct':
         terminators = [tokenizer.eos_token_id, tokenizer.convert_tokens_to_ids("<|eot_id|>")]
     else:
-        terminators = [tokenizer.eos_token_id]
-        if(args.model == 'mistralai/Mistral-7B-Instruct-v0.2'):
-            tokenizer.pad_token_id = tokenizer.eos_token_id
+        terminators = tokenizer.eos_token_id
     
     pred_labels = inference(model, tokenizer, queries_dict, majority_eval_prompt, terminators, k=args.top_k, p=args.top_p, temp=args.temperature, reasoning_paths=args.reasoning_paths)
 

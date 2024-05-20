@@ -15,7 +15,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     # Model and checkpoint paths, including a merging flag
-    parser.add_argument('--model', type=str, help='name of the model used to generate and combine prompts', default='mistralai/Mistral-7B-Instruct-v0.2') #'meta-llama/Meta-Llama-3-8B-Instruct', 'mistralai/Mistral-7B-Instruct-v0.2'
+    parser.add_argument('--model', type=str, help='name of the model used to generate and combine prompts', default='mistral') #'meta-llama/Meta-Llama-3-8B-Instruct', 'mistralai/Mistral-7B-Instruct-v0.2'
     parser.add_argument('--merge', dest='merge', action='store_true', help='boolean flag to set if model is merging')
     parser.add_argument('--no-merge', dest='merge', action='store_true', help='boolean flag to set if model is merging')
     parser.set_defaults(merge=False)
@@ -28,7 +28,7 @@ def main():
     args = parser.parse_known_args()
     parser.add_argument('--queries', type=str, help='path to queries file', default=f'queries/queries2024_{args[0].used_set}.json')
     parser.add_argument('--qrels', type=str, help='path to qrels file', default=f'qrels/qrels2024_{args[0].used_set}.json')
-    parser.add_argument('--prompts', type=str, help='path to prompts file', default="prompts/MistralPrompts.json")
+    parser.add_argument('--prompts', type=str, help='path to prompts file', default="")
     
     # Metrics only flag
     parser.add_argument('--metrics_only', action='store_true', help='boolean flag to set if we should run the model ot the metrics only', default=False)
@@ -40,7 +40,7 @@ def main():
     #Self-Consistency arguments
     parser.add_argument('--top_k', type=int, help='top k to use in inference', default=40)
     parser.add_argument('--top_p', type=float, help='p to use in nucleus sampling', default=0)
-    parser.add_argument('--temperature', type=float, help='temperature to use in inference', default=0.5)
+    parser.add_argument('--temperature', type=float, help='temperature to use in inference', default=0.7)
     parser.add_argument('--reasoning_paths', type=int, help='number of reasoning paths to use', default=8)
 
     # Output directory
@@ -54,6 +54,14 @@ def main():
     model = None
 
     cuda_available()
+    if args.model == "mistral":
+        args.model = 'mistralai/Mistral-7B-Instruct-v0.2'
+        if args.prompts == "":
+            args.prompts = "prompts/MistralPrompts.json"
+    elif args.model == "llama":
+        args.model = 'meta-llama/Meta-Llama-3-8B-Instruct'
+        if args.prompts == "":
+            args.prompts = "prompts/llamaPrompts.json"
 
     if args.metrics_only:
         queries = json.load(open(args.queries))
@@ -77,6 +85,7 @@ def main():
        model.to("cuda")
 
     tokenizer = AutoTokenizer.from_pretrained(args.model)
+    tokenizer.pad_token_id = tokenizer.eos_token_id
 
     # Load dataset, queries, qrels and prompts
     queries = json.load(open(args.queries))
@@ -85,7 +94,9 @@ def main():
 
     if args.task == "self_consistency":
         prompt = json.load(open(args.prompts))["self_consistency_prompt"]
-        self_consistency.self_consisntency(model, tokenizer, queries, qrels, "self_consistency_prompt", prompt, args, args.used_set)
+        majority_eval_prompt = json.load(open(args.prompts))["majority_evaluator_prompt"]
+        self_consistency.self_consisntency(model, tokenizer, queries, qrels, "self_consistency_prompt", prompt,
+                                           majority_eval_prompt, args, args.used_set)
         
     elif args.task == "output_labels":
         eval_prompt.output_prompt_labels(model, tokenizer, queries, prompt, args, args.used_set)
