@@ -32,14 +32,15 @@ def inference(model : object, tokenizer : object, queries : dict, majority_eval_
             tokenized = tokenizer(queries[q_id]["text"], return_tensors="pt")
             tokenized["input_ids"] = tokenized.input_ids.to(device="cuda")
             tokenized["attention_mask"] = tokenized.attention_mask.to(device="cuda")
-
+                        
+            outputs =  model.generate(**tokenized, max_new_tokens=200, temperature = temp, top_k = k, top_p = p,
+                                        do_sample=True, pad_token_id=tokenizer.eos_token_id, eos_token_id=terminators, 
+                                        num_return_sequences=reasoning_paths)
+            
             decoded_output= {}
             current_labels = []
             for i in range(reasoning_paths):
-                outputs =  model.generate(**tokenized, max_new_tokens=200, temperature = temp, top_k = k,
-                                        do_sample=True, pad_token_id=tokenizer.eos_token_id, eos_token_id=terminators, top_p=p, num_return_sequences=1)
-
-                decoded_output[i] = tokenizer.decode(outputs[0][tokenized["input_ids"].shape[1]:]).strip()
+                decoded_output[i] = tokenizer.decode(outputs[i][tokenized["input_ids"].shape[1]:]).strip()
                 current_labels.append([decoded_output[i]])
             
             res_labels[q_id] = evaluate_final_answer(model, tokenizer, decoded_output, majority_eval_prompt_skeleton, terminators)
