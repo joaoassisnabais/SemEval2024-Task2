@@ -5,6 +5,7 @@ import torch
 # Local files
 import eval_prompt
 import self_consistency
+from label_prompt_funcs import init_prompt
 
 # Model Libs
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -15,7 +16,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     # Model and checkpoint paths, including a merging flag
-    parser.add_argument('--model', type=str, help='name of the model used to generate and combine prompts', default='mistral') #'meta-llama/Meta-Llama-3-8B-Instruct', 'mistralai/Mistral-7B-Instruct-v0.2'
+    parser.add_argument('--model', type=str, help='name of the model used to generate and combine prompts', default='mistral', choices=['mistral', 'llama', 'biomistral']) #'meta-llama/Meta-Llama-3-8B-Instruct', 'mistralai/Mistral-7B-Instruct-v0.2', 'BioMistral/BioMistral-7B'
     parser.add_argument('--merge', dest='merge', action='store_true', help='boolean flag to set if model is merging')
     parser.add_argument('--no-merge', dest='merge', action='store_true', help='boolean flag to set if model is merging')
     parser.set_defaults(merge=False)
@@ -37,7 +38,7 @@ def main():
     # Task to run
     parser.add_argument('--task', type=str, help='task to run', default='self_consistency', choices=['output_labels', 'evaluate', 'self_consistency'])
     
-    #Self-Consistency arguments
+    # Self-Consistency arguments
     parser.add_argument('--top_k', type=int, help='top k to use in inference', default=40)
     parser.add_argument('--top_p', type=float, help='p to use in nucleus sampling', default=0)
     parser.add_argument('--temperature', type=float, help='temperature to use in inference', default=0.7)
@@ -62,6 +63,10 @@ def main():
         args.model = 'meta-llama/Meta-Llama-3-8B-Instruct'
         if args.prompts == "":
             args.prompts = "prompts/llamaPrompts.json"
+    elif args.model == "biomistral":
+        args.model = 'BioMistral/BioMistral-7B'
+        if args.prompts == "":
+            args.prompts = "prompts/MistralPrompts.json"
 
     if args.metrics_only:
         queries = json.load(open(args.queries))
@@ -90,18 +95,20 @@ def main():
     # Load dataset, queries, qrels and prompts
     queries = json.load(open(args.queries))
     qrels = json.load(open(args.qrels))
-    prompt = json.load(open(args.prompts))["best_combination_prompt"]
 
     if args.task == "self_consistency":
-        prompt = json.load(open(args.prompts))["self_consistency_prompt"]
-        majority_eval_prompt = json.load(open(args.prompts))["majority_evaluator_prompt"]
+        prompt = init_prompt(args.prompts, "self_consistency_prompt", "binary_output_format")
+        
+        majority_eval_prompt = json.load(open(args.prompts))["new_majority_evaluator_prompt"]
         self_consistency.self_consisntency(model, tokenizer, queries, qrels, "self_consistency_prompt", prompt,
                                            majority_eval_prompt, args, args.used_set)
         
     elif args.task == "output_labels":
+        prompt = init_prompt(args.prompts, "best_combination_prompt", "binary_output_format")
         eval_prompt.output_prompt_labels(model, tokenizer, queries, prompt, args, args.used_set)
 
     elif args.task == "evaluate":
+        prompt = init_prompt(args.prompts, "best_combination_prompt", "binary_output_format")
         eval_prompt.full_evaluate_prompt(model, tokenizer, queries, qrels, "best_combination_prompt", prompt, args, args.used_set)
 
 if __name__ == '__main__':

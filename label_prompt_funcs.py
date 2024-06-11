@@ -39,6 +39,11 @@ def generate_query_from_prompt(text_to_replace: dict, prompt: str) -> str:
     prompt = prompt.replace("$primary_evidence", text_to_replace["primary_evidence"])
     prompt = prompt.replace("$secondary_evidence", text_to_replace["secondary_evidence"])
     prompt = prompt.replace("$hypothesis", text_to_replace["hypothesis"])
+    try:
+        prompt = prompt.replace("$output_format", text_to_replace["output_format"])
+    except Exception:
+        pass
+    
     return prompt
 
 def create_qid_prompt_label_dict(queries : dict, qrels : dict, prompt : str) -> dict:
@@ -78,3 +83,11 @@ def generate_pos_prompts(mistral_prompts : dict):
         output_file.write(json.dumps(prompt_combinations, ensure_ascii=False, indent=4))
 
     return prompt_combinations
+
+def init_prompt(prompt_file: str, prompt_name: str, output_format: str) -> str:
+    prompt = json.load(open(prompt_file))[prompt_name]
+    try:
+        prompt = prompt.replace("$output_format", output_format)
+    except Exception:
+        pass
+    return prompt
