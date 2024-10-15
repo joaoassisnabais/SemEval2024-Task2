@@ -18,7 +18,10 @@
             "request": "launch",
             "program": "${workspaceFolder}/run_inference.py",
             "console": "integratedTerminal",
-            "args": ["--task", "self_consistency"]
+            "args": ["--task", "self_consistency", "--reasoning_paths", "20"],
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "2"
+            }
         }
     ]
 }

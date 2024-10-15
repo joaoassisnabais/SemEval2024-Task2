@@ -1,6 +1,7 @@
 import argparse
 import json
 import torch
+import os
 
 # Local files
 import eval_prompt
@@ -81,6 +82,7 @@ def main():
         model = PeftModel.from_pretrained(model, args.checkpoint)
         model = model.merge_and_unload()
         model.to("cuda")
+    
     else:
        model = AutoModelForCausalLM.from_pretrained(
             args.model, low_cpu_mem_usage=True,
@@ -91,6 +93,23 @@ def main():
 
     tokenizer = AutoTokenizer.from_pretrained(args.model)
     tokenizer.pad_token_id = tokenizer.eos_token_id
+    
+    #In case of mistral, we need to add the special tokens to the tokenizer
+    '''if args.model == "mistralai/Mistral-7B-Instruct-v0.2":
+        # Gives correct IDs: {'input_ids': [2], 'attention_mask': [1]}
+        tokenizer("</s>", add_special_tokens=False) 
+
+        # Gives correct IDs: {'input_ids': [842], 'attention_mask': [1]}
+        tokenizer(".", add_special_tokens=False)
+
+        # Gives incorrect IDs: {'input_ids': [842, 700, 28713, 28767], 'attention_mask': [1, 1, 1, 1]}
+        tokenizer(".</s>", add_special_tokens=False)
+'''
+
+    #Assert that the files exist
+    assert os.path.isfile(args.queries), f"Queries file {args.queries} does not exist"
+    assert os.path.isfile(args.qrels), f"Qrels file {args.qrels} does not exist"
+    assert os.path.isfile(args.prompts), f"Prompts file {args.prompts} does not exist"
 
     # Load dataset, queries, qrels and prompts
     queries = json.load(open(args.queries))
@@ -100,7 +119,7 @@ def main():
         prompt = init_prompt(args.prompts, "self_consistency_prompt", "binary_output_format")
         
         majority_eval_prompt = json.load(open(args.prompts))["new_majority_evaluator_prompt"]
-        self_consistency.self_consisntency(model, tokenizer, queries, qrels, "self_consistency_prompt", prompt,
+        self_consistency.self_consistency(model, tokenizer, queries, qrels, "self_consistency_prompt", prompt,
                                            majority_eval_prompt, args, args.used_set)
         
     elif args.task == "output_labels":

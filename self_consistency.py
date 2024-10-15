@@ -48,7 +48,7 @@ def inference(model : object, tokenizer : object, queries : dict, majority_eval_
     return res_labels
 
 
-def self_consisntency(model: object, tokenizer: object, queries: dict, qrels: dict, prompt_id : str, prompt: str, majority_eval_prompt: str, args : object, used_set : str) -> dict:
+def self_consistency(model: object, tokenizer: object, queries: dict, qrels: dict, prompt_id : str, prompt: str, majority_eval_prompt: str, args : object, used_set : str) -> dict:
     # Replace prompt with query info
     queries_dict = create_qid_prompt_label_dict(queries, qrels, prompt)
     
