@@ -5,25 +5,53 @@ import os
 
 # Local files
 import eval_prompt
-import self_consistency
-from label_prompt_funcs import init_prompt
+from llama_inference import llama_tasks
+from mistral_inference import mistral_tasks
 
 # Model Libs
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
 from utils import cuda_available
 
+def init_model(args):
+
+    if args.metrics_only:
+        queries = json.load(open(args.queries))
+        qrels = json.load(open(args.qrels))
+        prompt = json.load(open(args.prompts))["best_combination_prompt"]
+        pred_labels = json.load(open(args.labels))
+        eval_prompt.evaluate_without_query(pred_labels, queries, qrels, "best_combination_prompt", prompt, args, args.used_set)
+        return
+        
+    if args.merge:
+        model = AutoModelForCausalLM.from_pretrained(args.model)
+        model = PeftModel.from_pretrained(model, args.checkpoint)
+        model = model.merge_and_unload()
+        model.to("cuda")
+    
+    else:
+       model = AutoModelForCausalLM.from_pretrained(
+            args.model, low_cpu_mem_usage=True,
+            return_dict=True, torch_dtype=torch.bfloat16,
+            device_map= {"": 0}
+       )
+       model.to("cuda")
+
+    tokenizer = AutoTokenizer.from_pretrained(args.model)
+    tokenizer.pad_token_id = tokenizer.eos_token_id
+    
+    return model, tokenizer
+
 def main():
     parser = argparse.ArgumentParser()
 
     # Model and checkpoint paths, including a merging flag
-    parser.add_argument('--model', type=str, help='name of the model used to generate and combine prompts', default='mistral', choices=['mistral', 'llama', 'biomistral']) #'meta-llama/Meta-Llama-3-8B-Instruct', 'mistralai/Mistral-7B-Instruct-v0.2', 'BioMistral/BioMistral-7B'
+    parser.add_argument('--model', type=str, help='name of the model used to generate and combine prompts', default='mistral', choices=['mistral', 'llama', 'biomistral', 'mellama']) #'meta-llama/Meta-Llama-3-8B-Instruct', 'mistralai/Mistral-7B-Instruct-v0.2', 'BioMistral/BioMistral-7B'
     parser.add_argument('--merge', dest='merge', action='store_true', help='boolean flag to set if model is merging')
     parser.add_argument('--no-merge', dest='merge', action='store_true', help='boolean flag to set if model is merging')
     parser.set_defaults(merge=False)
 
     parser.add_argument('--checkpoint', type=str, help='path to model checkpoint, used if merging', default="")
-
 
     # Path to queries, qrels and prompt files
     parser.add_argument('--used_set', type=str, help='choose which data to use', default="test") # train | dev | test
@@ -53,82 +81,46 @@ def main():
 
     args = parser.parse_args()
 
-    model = None
-
     cuda_available()
+    
     if args.model == "mistral":
         args.model = 'mistralai/Mistral-7B-Instruct-v0.2'
         if args.prompts == "":
             args.prompts = "prompts/MistralPrompts.json"
+    
     elif args.model == "llama":
         args.model = 'meta-llama/Meta-Llama-3-8B-Instruct'
         if args.prompts == "":
             args.prompts = "prompts/llamaPrompts.json"
+            
+    elif args.model == "mellama":
+        args.model = "clinicalnlplab/me-llama"
+        if args.prompts == "":
+            args.prompts = "prompts/llamaPrompts.json"
+            
     elif args.model == "biomistral":
         args.model = 'BioMistral/BioMistral-7B'
         if args.prompts == "":
             args.prompts = "prompts/MistralPrompts.json"
-
-    if args.metrics_only:
-        queries = json.load(open(args.queries))
-        qrels = json.load(open(args.qrels))
-        prompt = json.load(open(args.prompts))["best_combination_prompt"]
-        pred_labels = json.load(open(args.labels))
-        eval_prompt.evaluate_without_query(pred_labels, queries, qrels, "best_combination_prompt", prompt, args, args.used_set)
-        return
         
-    if args.merge:
-        model = AutoModelForCausalLM.from_pretrained(args.model)
-        model = PeftModel.from_pretrained(model, args.checkpoint)
-        model = model.merge_and_unload()
-        model.to("cuda")
-    
     else:
-       model = AutoModelForCausalLM.from_pretrained(
-            args.model, low_cpu_mem_usage=True,
-            return_dict=True, torch_dtype=torch.bfloat16,
-            device_map= {"": 0}
-       )
-       model.to("cuda")
-
-    tokenizer = AutoTokenizer.from_pretrained(args.model)
-    tokenizer.pad_token_id = tokenizer.eos_token_id
+        raise ValueError("Model not recognized")
     
-    #In case of mistral, we need to add the special tokens to the tokenizer
-    '''if args.model == "mistralai/Mistral-7B-Instruct-v0.2":
-        # Gives correct IDs: {'input_ids': [2], 'attention_mask': [1]}
-        tokenizer("</s>", add_special_tokens=False) 
-
-        # Gives correct IDs: {'input_ids': [842], 'attention_mask': [1]}
-        tokenizer(".", add_special_tokens=False)
-
-        # Gives incorrect IDs: {'input_ids': [842, 700, 28713, 28767], 'attention_mask': [1, 1, 1, 1]}
-        tokenizer(".</s>", add_special_tokens=False)
-'''
-
+    
     #Assert that the files exist
     assert os.path.isfile(args.queries), f"Queries file {args.queries} does not exist"
     assert os.path.isfile(args.qrels), f"Qrels file {args.qrels} does not exist"
     assert os.path.isfile(args.prompts), f"Prompts file {args.prompts} does not exist"
-
-    # Load dataset, queries, qrels and prompts
+    
+    # Load dataset, queries, qrels
+    model, tokenizer = init_model(args)
     queries = json.load(open(args.queries))
     qrels = json.load(open(args.qrels))
-
-    if args.task == "self_consistency":
-        prompt = init_prompt(args.prompts, "self_consistency_wo_output", "binary_output_format")
-        
-        majority_eval_prompt = json.load(open(args.prompts))["new_majority_evaluator_prompt"]
-        self_consistency.self_consistency(model, tokenizer, queries, qrels, "self_consistency_prompt", prompt,
-                                           majority_eval_prompt, args, args.used_set)
-        
-    elif args.task == "output_labels":
-        prompt = init_prompt(args.prompts, "best_combination_prompt", "binary_output_format")
-        eval_prompt.output_prompt_labels(model, tokenizer, queries, prompt, args, args.used_set)
-
-    elif args.task == "evaluate":
-        prompt = init_prompt(args.prompts, "best_combination_prompt", "binary_output_format")
-        eval_prompt.full_evaluate_prompt(model, tokenizer, queries, qrels, "best_combination_prompt", prompt, args, args.used_set)
+    
+    if args.model == 'meta-llama/Meta-Llama-3-8B-Instruct':
+        llama_tasks(args, model, tokenizer, queries, qrels)    
+    else:
+        mistral_tasks(args, model, tokenizer, queries, qrels)
 
 if __name__ == '__main__':
     main()

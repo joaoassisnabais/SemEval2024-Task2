@@ -35,13 +35,14 @@ def query_inference(model : object, tokenizer : object, queries : dict) -> dict:
             tokenized["attention_mask"] = tokenized.attention_mask.to(device="cuda")
 
             # We could use do_sample=False and disable top_k and top_p to get a deterministic output
-            outputs =  model.generate(**tokenized, max_new_tokens=50, top_k = 5, do_sample=True, pad_token_id=tokenizer.eos_token_id,
-                                      prefix_allowed_tokens_fn=lambda x, y: prefix_allowed_tokens_fn(x, y, tokenizer))
+            outputs =  model.generate(**tokenized, max_new_tokens=50, top_k = 5, do_sample=True, pad_token_id=tokenizer.eos_token_id)
+                                      #prefix_allowed_tokens_fn=lambda x, y: prefix_allowed_tokens_fn(x, y, tokenizer))
 
             decoded_output = tokenizer.decode(outputs[0][tokenized["input_ids"].shape[1]:]).strip()
             decoded_output_sub = re.sub("[,!\.]+", " ", decoded_output)     #replace punctioation with space
             decoded_output_sub = re.sub("(\\n)+", " ", decoded_output_sub)  #replace newlines with space
             decoded_output_sub = re.sub("(<\/s>)+", " ", decoded_output_sub)    #replace </s> (EOS token) with space
+            decoded_output_sub = re.sub(r"<\|[^|]+\|>", " ", decoded_output_sub)    #replace tokens with space
 
             res_labels[q_id] = textlabel_2_binarylabel(decoded_output_sub.split(" "))
     return res_labels
@@ -114,8 +115,14 @@ def full_evaluate_prompt(model: object, tokenizer: object, queries: dict, qrels:
     # Compute metrics
     metrics, mistakes = calculate_metrics(pred_labels, queries_dict)
     output_mistakes(args, mistakes, prompt, queries, qrels, used_set)
-    
     output_full_metrics(args, prompt_id, prompt, used_set, metrics)
+    
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+    
+    # Output results
+    with safe_open_w(f'{args.output_dir}{timestamp}_{used_set}-set.json') as output_file:
+        output_file.write(json.dumps(label_2_SemEval2024(pred_labels), ensure_ascii=False, indent=4))
+    
     return metrics
 
 def output_prompt_labels(model : object, tokenizer : object, queries : dict, prompt : str, args : object, used_set : str):

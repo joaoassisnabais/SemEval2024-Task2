@@ -84,10 +84,24 @@ def generate_pos_prompts(mistral_prompts : dict):
 
     return prompt_combinations
 
-def init_prompt(prompt_file: str, prompt_name: str, output_format: str) -> str:
+def init_mistral_prompt(prompt_file: str, prompt_name: str, output_format: str) -> str:
     prompt = json.load(open(prompt_file))[prompt_name]
     try:
         prompt = prompt.replace("$output_format", output_format)
     except Exception:
         pass
     return prompt
+
+def init_llama_prompt(prompt_file: str, prompt_name: str, tokenizer: object) -> str:
+    try:
+        system_prompt = json.load(open(prompt_file))["system"][prompt_name]
+        user_prompt = json.load(open(prompt_file))["user"][prompt_name]
+        #chats = json.load(open(prompt_file))["chats"]
+    except Exception:
+        raise Exception(f"Prompt {prompt_name} not found in {prompt_file}")
+    
+    final_prompt = f"<|begin_of_text|><|start_header_id|>system<|end_header_id>\n\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id>\n\n{user_prompt}<|eot_id|>"
+    #final_prompt = tokenizer.apply_chat_template(chats)
+    #final_prompt = tokenizer.decode(final_prompt)
+    
+    return final_prompt

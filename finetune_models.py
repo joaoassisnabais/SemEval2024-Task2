@@ -35,20 +35,20 @@ def preprocess_dataset(args : argparse, prompt : str , split : str):
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--model_name', type=str, default="mistralai/Mistral-7B-Instruct-v0.2", help='model to train')
-    parser.add_argument('--exp_name', type=str, default="Mistral SemEval Fine-Tune", help='Describes the conducted experiment')
+    parser.add_argument('--model_name', type=str, default="meta-llama/Meta-Llama-3-8B-Instruct", help='model to train')
+    parser.add_argument('--exp_name', type=str, default="Llama SemEval Fine-Tune", help='Describes the conducted experiment')
     parser.add_argument('--run', type=int, default=14, help='run number for wandb logging')
 
     # I/O paths for models, CT, queries and qrels
     parser.add_argument('--save_dir', type=str, default="outputs/models/run_14/", help='path to model save dir')
 
-    parser.add_argument("--used_prompt", default="prompts/MistralPrompts.json", type=str)
+    parser.add_argument("--used_prompt", default="prompts/llamaPrompts.json", type=str)
     parser.add_argument("--queries", default="queries/", type=str)
     parser.add_argument("--qrels", default="qrels/", type=str)
 
     #Model Hyperparamenters
     parser.add_argument("--max_length", type=int, default=6000)
-    parser.add_argument("--batch_size", default=1, type=int)
+    parser.add_argument("--batch_size", type=int, default=1)
     parser.add_argument("--pooling", default="mean")
     parser.add_argument("--train_epochs", default=5, type=int)
     parser.add_argument("--lr", type=float, default=2e-5)
@@ -107,11 +107,9 @@ def create_model_and_tokenizer(args : argparse):
 def main():
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
     args = parse_args()
-    
-    
 
     wandb.init(
-        project="SemEval_Mistra",
+        project="SemEval_Llama",
         name = f'{args.model_name}/{args.exp_name}/run-{args.run}',
         group = f'{args.model_name}/{args.exp_name}',
         config = { arg : getattr(args, arg) for arg in vars(args)}
