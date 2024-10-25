@@ -11,6 +11,7 @@ import typing
 # Local Files
 from eval_prompt import create_qid_prompt_label_dict
 from utils import create_path
+from label_prompt_funcs import init_llama_prompt
 
 # Util libs
 from datasets.arrow_dataset import Dataset
@@ -40,7 +41,7 @@ def parse_args():
     parser.add_argument('--run', type=int, default=14, help='run number for wandb logging')
 
     # I/O paths for models, CT, queries and qrels
-    parser.add_argument('--save_dir', type=str, default="outputs/models/run_14/", help='path to model save dir')
+    parser.add_argument('--save_dir', type=str, default="outputs/models/run_1_llama/", help='path to model save dir')
 
     parser.add_argument("--used_prompt", default="prompts/llamaPrompts.json", type=str)
     parser.add_argument("--queries", default="queries/", type=str)
@@ -62,6 +63,7 @@ def parse_args():
     parser.add_argument("--fp16", action="store_true", help="Whether to use 16-bit (mixed) precision instead of 32-bit")
     parser.add_argument("--gradient_accumulation_steps", type=int, default=4, help="Number of updates steps to accumulate before performing a backward/update pass.")
     parser.add_argument("--gradient_checkpointing", action="store_false", help="If True, use gradient checkpointing to save memory at the expense of slower backward pass.")
+    parser.add_argument("--flash_attn", action="store_true", help="If True, use flash attention")
     args = parser.parse_args()
 
     return args
@@ -75,10 +77,17 @@ def create_model_and_tokenizer(args : argparse):
         bnb_4bit_use_double_quant= False,
     )
 
+    model_kwargs = {
+        "quantization_config": bnb_config,
+        "device_map": {"": 0}
+    }
+    
+    if args.flash_attn:
+        model_kwargs["attn_implementation"] = "flash_attention_2"
+
     model = AutoModelForCausalLM.from_pretrained(
         args.model_name,
-        quantization_config= bnb_config,
-        device_map= {"": 0}
+        **model_kwargs
     )
 
     #### LLAMA STUFF
@@ -93,7 +102,7 @@ def create_model_and_tokenizer(args : argparse):
         lora_dropout= args.lora_dropout,
         bias="none",
         task_type="CAUSAL_LM",
-        target_modules=["q_proj","k_proj","v_proj","o_proj","gate_proj"],
+        target_modules=["q_proj","k_proj","v_proj","o_proj","gate_proj", "up_proj", "down_proj"],
     )
 
     model = get_peft_model(model, peft_config)
@@ -119,7 +128,7 @@ def main():
     model, peft_config, tokenizer = create_model_and_tokenizer(args)
 
     # Load dataset and prompt
-    prompt = json.load(open(args.used_prompt))["best_combination_prompt"]
+    prompt = init_llama_prompt(args.used_prompt, "best_combination")
     train_dataset = preprocess_dataset(args, prompt, "train-manual-expand_and_dev")
     eval_dataset = preprocess_dataset(args, prompt, "dev")
 
@@ -134,7 +143,7 @@ def main():
         optim = "paged_adamw_8bit",
         logging_steps= 25,
         learning_rate= args.lr,
-        bf16= False,
+        bf16= True,
         group_by_length= True,
         lr_scheduler_type= "constant",
         #model load
@@ -143,11 +152,17 @@ def main():
         gradient_accumulation_steps= args.gradient_accumulation_steps,
         gradient_checkpointing= args.gradient_checkpointing,
         fp16= args.fp16,
-        report_to="wandb"
+        report_to="wandb",
+        use_flash_attention_2=args.flash_attn
     )    
 
     ## Data collator for completing with "Answer: YES" or "Answer: NO"
-    collator = DataCollatorForCompletionOnlyLM("Answer:", tokenizer= tokenizer)
+    collator = DataCollatorForCompletionOnlyLM("Answer:", tokenizer= tokenizer, padding_free=args.flash_attn)
+    
+    if args.flash_attn:
+        if model.config.attn_implementation != "flash_attention_2":
+            raise Exception("Warning: Flash Attention 2 was requested but is not being used. This might be due to hardware limitations or missing dependencies.")
+
 
     ## Setting sft parameters
     trainer = SFTTrainer(
