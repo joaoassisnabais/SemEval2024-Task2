@@ -37,7 +37,7 @@ def init_model(args):
        )
        model.to("cuda")
 
-    tokenizer = AutoTokenizer.from_pretrained(args.model)
+    tokenizer = AutoTokenizer.from_pretrained(args.model, padding_side="left")
     tokenizer.pad_token_id = tokenizer.eos_token_id
     
     return model, tokenizer
@@ -46,7 +46,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     # Model and checkpoint paths, including a merging flag
-    parser.add_argument('--model', type=str, help='name of the model used to generate and combine prompts', default='mistral', choices=['mistral', 'llama', 'biomistral', 'mellama']) #'meta-llama/Meta-Llama-3-8B-Instruct', 'mistralai/Mistral-7B-Instruct-v0.2', 'BioMistral/BioMistral-7B'
+    parser.add_argument('--model', type=str, help='name of the model used to generate and combine prompts', default='llama', choices=['mistral', 'llama', 'biomistral', 'mellama']) #'meta-llama/Meta-Llama-3-8B-Instruct', 'mistralai/Mistral-7B-Instruct-v0.2', 'BioMistral/BioMistral-7B'
     parser.add_argument('--merge', dest='merge', action='store_true', help='boolean flag to set if model is merging')
     parser.add_argument('--no-merge', dest='merge', action='store_true', help='boolean flag to set if model is merging')
     parser.set_defaults(merge=False)
