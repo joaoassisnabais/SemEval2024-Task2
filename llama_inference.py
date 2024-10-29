@@ -15,7 +15,7 @@ def llama_tasks(args, model, tokenizer, queries, qrels):
                                         majority_eval_prompt, args, args.used_set)
             
     elif args.task == "output_labels":
-        prompt = init_llama_prompt(args.prompts, "best_combination")
+        prompt = init_llama_prompt(args.prompts, "best_combination", tokenizer)
         output_prompt_labels(model, tokenizer, queries, prompt, args, args.used_set)
 
     elif args.task == "evaluate":

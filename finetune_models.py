@@ -48,7 +48,7 @@ def parse_args():
     parser.add_argument("--qrels", default="qrels/", type=str)
 
     #Model Hyperparamenters
-    parser.add_argument("--max_length", type=int, default=6000)
+    parser.add_argument("--max_length", type=int, default=10000)
     parser.add_argument("--batch_size", type=int, default=1)
     parser.add_argument("--pooling", default="mean")
     parser.add_argument("--train_epochs", default=5, type=int)
@@ -128,7 +128,7 @@ def main():
     model, peft_config, tokenizer = create_model_and_tokenizer(args)
 
     # Load dataset and prompt
-    prompt = init_llama_prompt(args.used_prompt, "best_combination")
+    prompt = init_llama_prompt(args.used_prompt, "best_combination", tokenizer)
     train_dataset = preprocess_dataset(args, prompt, "train-manual-expand_and_dev")
     eval_dataset = preprocess_dataset(args, prompt, "dev")
 
@@ -152,12 +152,13 @@ def main():
         gradient_accumulation_steps= args.gradient_accumulation_steps,
         gradient_checkpointing= args.gradient_checkpointing,
         fp16= args.fp16,
-        report_to="wandb",
-        use_flash_attention_2=args.flash_attn
+        report_to="wandb"
     )    
 
-    ## Data collator for completing with "Answer: YES" or "Answer: NO"
-    collator = DataCollatorForCompletionOnlyLM("Answer:", tokenizer= tokenizer, padding_free=args.flash_attn)
+    ## Data collator for completing with "YES" or "NO"
+    #sep_tokens = tokenizer.encode("\n<|start_header_id|>assistant<|end_header_id|>")[2:]
+    sep_tokens = tokenizer.encode("\nAnswer:")[2:]
+    collator = DataCollatorForCompletionOnlyLM(response_template=sep_tokens, tokenizer=tokenizer)
     
     if args.flash_attn:
         if model.config.attn_implementation != "flash_attention_2":

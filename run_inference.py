@@ -93,11 +93,6 @@ def main():
         if args.prompts == "":
             args.prompts = "prompts/llamaPrompts.json"
             
-    elif args.model == "mellama":
-        args.model = "clinicalnlplab/me-llama"
-        if args.prompts == "":
-            args.prompts = "prompts/llamaPrompts.json"
-            
     elif args.model == "biomistral":
         args.model = 'BioMistral/BioMistral-7B'
         if args.prompts == "":

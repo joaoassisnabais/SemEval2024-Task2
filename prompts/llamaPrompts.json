@@ -9,7 +9,7 @@
 
     "user" : {
         
-        "self_consistency_structure" : "",
+        "self_consistency" : "",
 
         "best_combination" : "The following descriptions correspond to the information in one of the Clinical Trial Report (CTR) sections.\n\nPrimary Trial: $primary_evidence\n\nSecondary Trial(Optional): $secondary_evidence\n\nReflect upon the ensuing statement crafted by an expert in clinical trials: $hypothesis\n\nRespond with either YES or NO to indicate whether it is possible to determine the statement's validity based on the Clinical Trial Report (CTR) information, with the statement being supported by the CTR data and not contradicting the provided descriptions."
     
