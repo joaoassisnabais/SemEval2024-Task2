@@ -38,16 +38,15 @@ def parse_args():
 
     parser.add_argument('--model_name', type=str, default="meta-llama/Meta-Llama-3-8B-Instruct", help='model to train')
     parser.add_argument('--exp_name', type=str, default="Llama SemEval Fine-Tune", help='Describes the conducted experiment')
-    parser.add_argument('--run', type=int, default=14, help='run number for wandb logging')
+    parser.add_argument('--run', type=int, default="0", help='run number for wandb logging')
 
     # I/O paths for models, CT, queries and qrels
-    parser.add_argument('--save_dir', type=str, default="outputs/models/run_1_llama/", help='path to model save dir')
-
+    parser.add_argument('--save_dir', type=str, default="outputs/models/run_3_llama/", help='path to model save dir')
     parser.add_argument("--used_prompt", default="prompts/llamaPrompts.json", type=str)
     parser.add_argument("--queries", default="queries/", type=str)
     parser.add_argument("--qrels", default="qrels/", type=str)
 
-    #Model Hyperparamenters
+    # Model Hyperparamenters
     parser.add_argument("--max_length", type=int, default=10000)
     parser.add_argument("--batch_size", type=int, default=1)
     parser.add_argument("--pooling", default="mean")
@@ -59,11 +58,14 @@ def parse_args():
     parser.add_argument("--lora_dropout", type=float, default=0.1)
     parser.add_argument("--lora_alpha", type=float, default=16)
 
-    #Speed and memory optimization parameters
+    # Speed and memory optimization parameters
     parser.add_argument("--fp16", action="store_true", help="Whether to use 16-bit (mixed) precision instead of 32-bit")
     parser.add_argument("--gradient_accumulation_steps", type=int, default=4, help="Number of updates steps to accumulate before performing a backward/update pass.")
     parser.add_argument("--gradient_checkpointing", action="store_false", help="If True, use gradient checkpointing to save memory at the expense of slower backward pass.")
     parser.add_argument("--flash_attn", action="store_true", help="If True, use flash attention")
+    
+    # Self-consistency parameters
+    
     args = parser.parse_args()
 
     return args
@@ -119,7 +121,7 @@ def main():
 
     wandb.init(
         project="SemEval_Llama",
-        name = f'{args.model_name}/{args.exp_name}/run-{args.run}',
+        name = f'{args.model_name}/{args.exp_name}/run-{args.save_dir.split("/")[2]}',
         group = f'{args.model_name}/{args.exp_name}',
         config = { arg : getattr(args, arg) for arg in vars(args)}
     )

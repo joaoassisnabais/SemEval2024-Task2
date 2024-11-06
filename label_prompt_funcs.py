@@ -99,7 +99,6 @@ def init_llama_prompt(prompt_file: str, prompt_name: str, tokenizer: object) -> 
     except Exception:
         raise Exception(f"Prompt {prompt_name} not found in {prompt_file}")
     
-    #final_prompt = f"<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{user_prompt}\n\nAnswer: <|eot_id|>"
     final_prompt = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt}

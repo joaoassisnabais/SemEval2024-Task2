@@ -9,7 +9,7 @@ from llama_inference import llama_tasks
 from mistral_inference import mistral_tasks
 
 # Model Libs
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, logging
 from peft import PeftModel
 from utils import cuda_available
 
@@ -111,6 +111,8 @@ def main():
     model, tokenizer = init_model(args)
     queries = json.load(open(args.queries))
     qrels = json.load(open(args.qrels))
+    
+    logging.set_verbosity_error()
     
     if args.model == 'meta-llama/Meta-Llama-3-8B-Instruct':
         llama_tasks(args, model, tokenizer, queries, qrels)    
