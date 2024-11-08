@@ -67,6 +67,11 @@ def main():
     # Task to run
     parser.add_argument('--task', type=str, help='task to run', default='self_consistency', choices=['output_labels', 'evaluate', 'self_consistency'])
     
+    # Prompt arguments
+    parser.add_argument('--prompt_id', type=str, help='prompt id to use', default='self_consistency', choices=['best_combination', 'self_consistency'])
+    parser.add_argument('--constraint_decoding', action='store_true', help='boolean flag to set if we should use constraint decoding')
+    parser.set_defaults(constraint_decoding=False)
+    
     # Self-Consistency arguments
     parser.add_argument('--top_k', type=int, help='top k to use in inference', default=40)
     parser.add_argument('--top_p', type=float, help='p to use in nucleus sampling', default=0)

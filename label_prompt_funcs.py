@@ -106,7 +106,8 @@ def init_llama_prompt(prompt_file: str, prompt_name: str, tokenizer: object) -> 
     final_prompt = tokenizer.apply_chat_template(final_prompt)
     final_prompt = tokenizer.decode(final_prompt)
     
-    final_prompt = final_prompt.rsplit("<|eot_id|>", 1)
-    final_prompt = final_prompt[0] + "\n\nAnswer:<|eot_id|>" + final_prompt[1]
+    if prompt_name == "best_combination":    
+        final_prompt = final_prompt.rsplit("<|eot_id|>", 1)
+        final_prompt = final_prompt[0] + "\n\nAnswer:<|eot_id|>" + final_prompt[1]
     
     return final_prompt
