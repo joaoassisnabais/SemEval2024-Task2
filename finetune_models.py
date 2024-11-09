@@ -3,10 +3,8 @@
 import os
 import wandb
 import json
-#os.environ["CUDA_VISIBLE_DEVICES"] = "0"    # Set the GPU to use
 import torch
 import argparse
-import typing
 
 # Local Files
 from eval_prompt import create_qid_prompt_label_dict
@@ -130,7 +128,7 @@ def main():
     model, peft_config, tokenizer = create_model_and_tokenizer(args)
 
     # Load dataset and prompt
-    prompt = init_llama_prompt(args.used_prompt, "best_combination", tokenizer)
+    prompt = init_llama_prompt(args.used_prompt, "self_consistency", tokenizer)
     train_dataset = preprocess_dataset(args, prompt, "train-manual-expand_and_dev")
     eval_dataset = preprocess_dataset(args, prompt, "dev")
 
@@ -159,7 +157,7 @@ def main():
 
     ## Data collator for completing with "YES" or "NO"
     #sep_tokens = tokenizer.encode("\n<|start_header_id|>assistant<|end_header_id|>")[2:]
-    sep_tokens = tokenizer.encode("\nAnswer:")[2:]
+    sep_tokens = tokenizer.encode("\nFinal Answer:")[2:]
     collator = DataCollatorForCompletionOnlyLM(response_template=sep_tokens, tokenizer=tokenizer)
     
     if args.flash_attn:
