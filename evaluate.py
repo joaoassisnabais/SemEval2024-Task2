@@ -52,12 +52,12 @@ def extract_by_causal_type(predictions, gold):
     return predictions_preserving, predictions_altering
 
 
-def faithfulness(predictions, gold):
-    uuid_list = list(predictions.keys())
+def faithfulness(predictions_altering, predictions, gold):
+    uuid_list = list(predictions_altering.keys())
     N = len(uuid_list)
     results = []
     for key in uuid_list:
-        if predictions[key]["Prediction"] != gold[gold[key]["Causal_type"][1]]["Label"]:
+        if predictions_altering[key]["Prediction"] != predictions[gold[key]["Causal_type"][1]]["Prediction"]:
             results.append(1)
         else:
             results.append(0)
@@ -70,7 +70,7 @@ def consistency(predictions_preserving, predictions, gold):
     N = len(uuid_list)
     results = []
     for key in uuid_list:
-        if predictions_preserving[key]["Prediction"] == predictions[data[key]["Causal_type"][1]]["Prediction"]:
+        if predictions_preserving[key]["Prediction"] == predictions[gold[key]["Causal_type"][1]]["Prediction"]:
             results.append(1)
         else:
             results.append(0)
@@ -107,22 +107,18 @@ def F1_Recall_Precision(predictions, gold):
 def main():
 
     # Load files
-    input_dir = sys.argv[1]
-    output_dir = sys.argv[2]
-    pred_dir = os.path.join(input_dir, 'res')
-    gold_dir = os.path.join(input_dir, 'ref')
-
-    if not os.path.isdir(pred_dir):
-        raise RuntimeError('{} does not exist'.format(pred_dir))
-
-    if not os.path.isdir(gold_dir):
-        raise RuntimeError('{} does not exist'.format(gold_dir))
+    input_dir = 'outputs'
+    gold_dir = 'qrels'
+    gold_filename = os.path.join(gold_dir, 'qrels2024_test.json')
+    pred_filename = os.path.join(input_dir, '2024-10-29_17-30_test-set.json')
+    
+    output_dir = f'outputs/evaluated/{pred_filename.split("/")[-1].split(".")[0]}'
 
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    gold_filename = os.path.join(gold_dir, 'gold_test.json')
-    pred_filename = os.path.join(pred_dir, 'results.json')
+    #gold_filename = os.path.join(gold_dir, 'gold_test.json')
+    #pred_filename = os.path.join(pred_dir, 'results.json')    
 
     with open(pred_filename) as json_file:
         predictions = json.load(json_file)
@@ -138,8 +134,8 @@ def main():
     # Contrast Consistency & Faithfullness PUBLIC
     contrast_predictions = extract_contrast_set(predictions, gold)
     predictions_preserving, predictions_altering = extract_by_causal_type(contrast_predictions, gold)
-    Faithfulness = faithfulness(predictions_altering, gold)
-    Consistency = consistency(predictions_preserving, gold)
+    Faithfulness = faithfulness(predictions_altering, predictions, gold)
+    Consistency = consistency(predictions_preserving, predictions, gold)
 
 
     # Intervention-wise Consistency & Faithfullness HIDDEN
@@ -150,13 +146,13 @@ def main():
     numerical_para_preserving = extract_by_causal_type(numerical_para_predictions, gold)[0]
     numerical_cont_preserving, numerical_cont_altering = extract_by_causal_type(numerical_cont_predictions, gold)
     definitions_preserving = extract_by_causal_type(definitions_predictions, gold)[0]
-    para_Consistency = consistency(para_preserving, gold)
-    cont_Faithfulness = faithfulness(cont_altering, gold)
-    cont_Consistency = consistency(cont_preserving, gold)
-    numerical_para_Consistency = consistency(numerical_para_preserving, gold)
-    numerical_cont_Faithfulness = faithfulness(numerical_cont_altering, gold)
-    numerical_cont_Consistency = consistency(numerical_cont_preserving, gold)
-    definitions_Consistency = consistency(definitions_preserving, gold)
+    para_Consistency = consistency(para_preserving, predictions, gold)
+    cont_Faithfulness = faithfulness(cont_altering, predictions, gold)
+    cont_Consistency = consistency(cont_preserving, predictions, gold)
+    numerical_para_Consistency = consistency(numerical_para_preserving, predictions, gold)
+    numerical_cont_Faithfulness = faithfulness(numerical_cont_altering, predictions, gold)
+    numerical_cont_Consistency = consistency(numerical_cont_preserving, predictions, gold)
+    definitions_Consistency = consistency(definitions_preserving, predictions, gold)
 
 
     # Intervention-wise F1, Recall, Precision HIDDEN
