@@ -168,6 +168,10 @@ combination_output/
 args_output/
 wandb
 
+# Visual Studio Code
+.vscode/
+.vscode/launch.json
+
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore

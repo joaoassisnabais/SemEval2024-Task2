@@ -1,5 +1,5 @@
 import json
-import typing
+import re
 
 # Local Files
 from utils import safe_open_w
@@ -12,6 +12,16 @@ def textlabel_2_binarylabel(text_label: list[str]) -> int:
         if label.lower() in ENTAILMENT_LABELS:
             return 1
         elif label.lower() in CONTRADICTION_LABELS:
+            return 0
+    return 1 # In case of no label, default to Entailment
+
+def cotlabel_2_binarylabel(cot_label: list[str]) -> int:
+    cot_label = ''.join(cot_label)
+    match = re.search(r'THE\s*FINAL\s*ANSWER\s*IS\s*:*\s*(YES|NO)', cot_label.upper())
+    if match:
+        if match.group().endswith("YES"):
+            return 1
+        elif match.group().endswith("NO"):
             return 0
     return 1 # In case of no label, default to Entailment
 
@@ -29,6 +39,11 @@ def generate_query_from_prompt(text_to_replace: dict, prompt: str) -> str:
     prompt = prompt.replace("$primary_evidence", text_to_replace["primary_evidence"])
     prompt = prompt.replace("$secondary_evidence", text_to_replace["secondary_evidence"])
     prompt = prompt.replace("$hypothesis", text_to_replace["hypothesis"])
+    try:
+        prompt = prompt.replace("$output_format", text_to_replace["output_format"])
+    except Exception:
+        pass
+    
     return prompt
 
 def create_qid_prompt_label_dict(queries : dict, qrels : dict, prompt : str) -> dict:
@@ -39,6 +54,13 @@ def create_qid_prompt_label_dict(queries : dict, qrels : dict, prompt : str) -> 
             "gold_label" : textlabel_2_binarylabel([qrels[q_id]["Label"].strip()])
         }
     return queries_dict
+
+def create_majority_eval_prompt(outputs : list[str], prompt : str) -> dict:
+    concatenated_outputs = ""
+    for i in range(len(outputs)):
+        concatenated_outputs += f"\n{i+1}- " + outputs[i]
+    prompt = prompt.replace("$outputs", concatenated_outputs)
+    return concatenated_outputs
 
 def create_qdid_prompt(queries : dict, prompt : str) -> dict:
     queries_dict = {}
@@ -57,7 +79,35 @@ def generate_pos_prompts(mistral_prompts : dict):
 
                     prompt_combinations["combination_prompts"][f'<s>[INST]{task_id}_{ctr_id}_{statement_id}_{option_id}[/INST]'] = combination
 
-    with safe_open_w(f'prompts/MistralPromptsCombination_V2.json') as output_file:
+    with safe_open_w('prompts/MistralPromptsCombination_V2.json') as output_file:
         output_file.write(json.dumps(prompt_combinations, ensure_ascii=False, indent=4))
 
     return prompt_combinations
+
+def init_mistral_prompt(prompt_file: str, prompt_name: str, output_format: str) -> str:
+    prompt = json.load(open(prompt_file))[prompt_name]
+    try:
+        prompt = prompt.replace("$output_format", output_format)
+    except Exception:
+        pass
+    return prompt
+
+def init_llama_prompt(prompt_file: str, prompt_name: str, tokenizer: object) -> str:
+    try:
+        system_prompt = json.load(open(prompt_file))["system"][prompt_name]
+        user_prompt = json.load(open(prompt_file))["user"][prompt_name]
+    except Exception:
+        raise Exception(f"Prompt {prompt_name} not found in {prompt_file}")
+    
+    final_prompt = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt}
+    ]
+    final_prompt = tokenizer.apply_chat_template(final_prompt)
+    final_prompt = tokenizer.decode(final_prompt)
+    
+    if prompt_name == "best_combination":    
+        final_prompt = final_prompt.rsplit("<|eot_id|>", 1)
+        final_prompt = final_prompt[0] + "\n\nAnswer:<|eot_id|>" + final_prompt[1]
+    
+    return final_prompt

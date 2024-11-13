@@ -1,5 +1,6 @@
 import os
 import json
+import torch
 
 def safe_open_w(path: str) -> object:
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -75,3 +76,15 @@ def check_mistakes(results_path : str, qrels_path : str) -> None:
     print(f"Intervention errors: {total_errors-base_errors} ({(total_errors-base_errors)/total_errors*100:.2f}%)")
     for error in intervention_errors:
         print(f"{error}: {intervention_errors[error]['wrong']} / {intervention_errors[error]['total']} ({intervention_errors[error]['wrong']/intervention_errors[error]['total']*100:.1f}\%)")
+        
+def cuda_available() -> None:
+    try:
+        if torch.cuda.is_available():
+            print("Number of available GPUs:", torch.cuda.device_count())
+            for i in range(torch.cuda.device_count()):
+                name = torch.cuda.get_device_name(i)
+                print(f"  GPU {i}: {name}")
+        else:
+            raise torch.cuda.CudaError
+    except Exception as e:
+        print(f"No CUDA devices available: {e}")
