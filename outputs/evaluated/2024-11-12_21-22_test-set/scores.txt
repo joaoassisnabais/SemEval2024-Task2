@@ -4,13 +4,13 @@ Control_Precision:  0.632
 Contrast_F1:  0.5725956182695878
 Contrast_Recall:  0.6996370235934665
 Contrast_Precision:  0.4846008799497172
-Faithfulness:  0.6331018518518519
+Faithfulness:  0.9085648148148148
 Consistency:  0.808752417794971
 Para_Consistency:  0.822
-Cont_Faithfulness:  0.6466666666666666
+Cont_Faithfulness:  0.908
 Cont_Consistency:  0.7813333333333333
 Numerical_Para_Consistency:  0.78125
-Numerical_Cont_Faithfulness:  0.543859649122807
+Numerical_Cont_Faithfulness:  0.9122807017543859
 Numerical_Cont_Consistency:  0.8395061728395061
 Definitions_Consistency:  0.81
 Para_F1:  0.7033639143730887

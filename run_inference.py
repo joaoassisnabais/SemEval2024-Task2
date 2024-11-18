@@ -51,7 +51,7 @@ def main():
     parser.add_argument('--no-merge', dest='merge', action='store_true', help='boolean flag to set if model is merging')
     parser.set_defaults(merge=False)
 
-    parser.add_argument('--checkpoint', type=str, help='path to model checkpoint, used if merging', default="")
+    parser.add_argument('--checkpoint', type=str, help='path to model checkpoint, used if merging', default="models/run_3_llama/end_model")
 
     # Path to queries, qrels and prompt files
     parser.add_argument('--used_set', type=str, help='choose which data to use', default="test") # train | dev | test
