@@ -42,11 +42,13 @@ def get_label_from_cot(cot_label: list[str]) -> int:
             
     return predicted_labels
 
-def simple_majority_voting_sc(cot_labels: list[int]) -> int:
-    predicted_labels = get_label_from_cot(cot_labels)
-
 def most_common(lst):
     return max(set(lst), key=lst.count)
+
+def simple_majority_voting_sc(cot_labels: list[int]) -> int:
+    predicted_labels = get_label_from_cot(cot_labels)
+    predicted_label_major = most_common(predicted_labels)  
+    return 1 if predicted_label_major == 'Entailment' else 0
 
 def complex_majority_voting_sc(cot_labels: list[str], reasoning_paths: int) -> int:
     decided = False

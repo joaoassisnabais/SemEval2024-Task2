@@ -41,13 +41,13 @@ def inference(model : object, tokenizer : object, queries : dict, majority_eval_
             current_labels = []
             for i in range(reasoning_paths):
                 decoded_output[i] = tokenizer.decode(outputs[i][tokenized["input_ids"].shape[1]:]).strip()
-                current_labels.append([decoded_output[i]])
+                current_labels.append(decoded_output[i])
             
             if majority_voting:
                 if majority_voting == "simple":
-                    res_labels[q_id] = simple_majority_voting_sc(list(set(current_labels)))
+                    res_labels[q_id] = simple_majority_voting_sc(current_labels)
                 elif majority_voting == "complex":
-                    res_labels[q_id] = complex_majority_voting_sc(list(set(current_labels)))
+                    res_labels[q_id] = complex_majority_voting_sc(current_labels)
             else:
                 res_labels[q_id] = evaluate_final_answer(model, tokenizer, decoded_output, majority_eval_prompt_skeleton)
                 
