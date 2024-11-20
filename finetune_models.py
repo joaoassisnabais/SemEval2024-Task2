@@ -27,8 +27,8 @@ def preprocess_dataset(args : argparse, prompt : str , split : str):
     for q_id in set_examples:
         example = set_examples[q_id]
         set_dict["id"].append(q_id)
-        label = "YES" if example["gold_label"] == 1 else "NO"
-        set_dict["text"].append(f'{example["text"]} Answer: {label}')
+        label = "ENTAILMENT" if example["gold_label"] == 1 else "CONTRADICTION"
+        set_dict["text"].append(f'{example["text"]} Final Answer: {label}')
     return Dataset.from_dict(set_dict)
 
 def parse_args():
@@ -39,7 +39,7 @@ def parse_args():
     parser.add_argument('--run', type=int, default="0", help='run number for wandb logging')
 
     # I/O paths for models, CT, queries and qrels
-    parser.add_argument('--save_dir', type=str, default="outputs/models/run_3_llama/", help='path to model save dir')
+    parser.add_argument('--save_dir', type=str, default="outputs/models/run_4_llama/", help='path to model save dir')
     parser.add_argument("--used_prompt", default="prompts/llamaPrompts.json", type=str)
     parser.add_argument("--queries", default="queries/", type=str)
     parser.add_argument("--qrels", default="qrels/", type=str)
@@ -61,8 +61,6 @@ def parse_args():
     parser.add_argument("--gradient_accumulation_steps", type=int, default=4, help="Number of updates steps to accumulate before performing a backward/update pass.")
     parser.add_argument("--gradient_checkpointing", action="store_false", help="If True, use gradient checkpointing to save memory at the expense of slower backward pass.")
     parser.add_argument("--flash_attn", action="store_true", help="If True, use flash attention")
-    
-    # Self-consistency parameters
     
     args = parser.parse_args()
 
@@ -128,7 +126,7 @@ def main():
     model, peft_config, tokenizer = create_model_and_tokenizer(args)
 
     # Load dataset and prompt
-    prompt = init_llama_prompt(args.used_prompt, "self_consistency", tokenizer)
+    prompt = init_llama_prompt(args.used_prompt, "self_consistency_2", tokenizer)
     train_dataset = preprocess_dataset(args, prompt, "train-manual-expand_and_dev")
     eval_dataset = preprocess_dataset(args, prompt, "dev")
 

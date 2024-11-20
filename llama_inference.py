@@ -8,11 +8,12 @@ from label_prompt_funcs import init_llama_prompt
 def llama_tasks(args, model, tokenizer, queries, qrels):
     
     if args.task == "self_consistency":
-        prompt = init_llama_prompt(args.prompts, args.prompt_id)
-        majority_eval_prompt = json.load(open(args.prompts))["new_majority_evaluator_prompt"]
+        prompt = init_llama_prompt(args.prompts, args.prompt_id, tokenizer)
+        #majority_eval_prompt = json.load(open(args.prompts))["new_majority_evaluator_prompt"]
+        majority_eval_prompt = "Please select the most appropriate answer from the following options: $outputs"
         
         self_consistency.self_consistency(model, tokenizer, queries, qrels, "self_consistency_prompt", prompt,
-                                        majority_eval_prompt, args, args.used_set)
+                                        majority_eval_prompt, args, args.used_set, args.majority_voting)
             
     elif args.task == "output_labels":
         prompt = init_llama_prompt(args.prompts, args.prompt_id, tokenizer)

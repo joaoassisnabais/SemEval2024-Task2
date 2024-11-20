@@ -1,5 +1,6 @@
 import json
 import re
+import collections
 
 # Local Files
 from utils import safe_open_w
@@ -24,6 +25,50 @@ def cotlabel_2_binarylabel(cot_label: list[str]) -> int:
         elif match.group().endswith("NO"):
             return 0
     return 1 # In case of no label, default to Entailment
+
+def get_label_from_cot(cot_label: list[str]) -> int:
+    predicted_labels = []
+    
+    for part in cot_label:
+        entail = re.search(r'entailment|yes', part, re.IGNORECASE)
+        contra = re.search(r'contradiction|not\s+entailed|no', part, re.IGNORECASE)
+        neutral = re.search(r'not\s+enough\s+information|inconclusive|undetermined|neutral|undefined|indeterminate', part, re.IGNORECASE) 
+        if entail:
+            predicted_labels.append('Entailment')
+        if contra:
+            predicted_labels.append('Contradiction')
+        if neutral:
+            predicted_labels.append('Neutral')
+            
+    return predicted_labels
+
+def simple_majority_voting_sc(cot_labels: list[int]) -> int:
+    predicted_labels = get_label_from_cot(cot_labels)
+
+def most_common(lst):
+    return max(set(lst), key=lst.count)
+
+def complex_majority_voting_sc(cot_labels: list[str], reasoning_paths: int) -> int:
+    decided = False
+    
+    predicted_labels = get_label_from_cot(cot_labels)
+    
+    if len(predicted_labels) >= int(reasoning_paths * 0.8):
+        counter = collections.Counter(predicted_labels)
+        d = dict(counter)
+        predicted_label_major = most_common(predicted_labels)
+        labels = ['Entailment', 'Contradiction']
+        labels.pop(labels.index(predicted_label_major))
+        other_label = labels[0]
+        if other_label in d and d[predicted_label_major] - d[other_label] > 1:
+            decided = True
+        elif other_label not in d:
+            decided = True
+        
+        return 1 if predicted_label_major == 'Entailment' else 0
+
+    #TODO: if it is not decided, rerun with a different seed until it is decided
+    return 1 
 
 def label_2_SemEval2024(labels : dict) -> dict:
     return {q_id : {"Prediction" : "Entailment" if labels[q_id] == 1 else "Contradiction"} for q_id in labels}

@@ -36,10 +36,10 @@ def query_inference(model : object, tokenizer : object, queries : dict, chain_of
             
             # We could use do_sample=False and disable top_k and top_p to get a deterministic output
             if constraint_decoding:
-                outputs = model.generate(**tokenized, max_new_tokens=500, top_k = 5, do_sample=True, pad_token_id=tokenizer.eos_token_id,
+                outputs = model.generate(**tokenized, max_new_tokens=10000, top_k = 5, do_sample=True, pad_token_id=tokenizer.eos_token_id,
                                          prefix_allowed_tokens_fn=lambda x, y: prefix_allowed_tokens_fn(x, y, tokenizer))            
             else:
-                outputs =  model.generate(**tokenized, max_new_tokens=500, top_k = 5, do_sample=True, pad_token_id=tokenizer.eos_token_id)
+                outputs =  model.generate(**tokenized, max_new_tokens=10000, top_k = 5, do_sample=True, pad_token_id=tokenizer.eos_token_id)
                                       
             decoded_output = tokenizer.decode(outputs[0][tokenized["input_ids"].shape[1]:]).strip()
             decoded_output_sub = re.sub("[,!\.]+", " ", decoded_output)     #replace punctioation with space

@@ -3,7 +3,8 @@ import torch
 
 # Local Files
 from utils import safe_open_w
-from label_prompt_funcs import create_majority_eval_prompt, label_2_SemEval2024, create_qid_prompt_label_dict, cotlabel_2_binarylabel
+from label_prompt_funcs import create_majority_eval_prompt, label_2_SemEval2024, create_qid_prompt_label_dict, cotlabel_2_binarylabel, \
+    complex_majority_voting_sc, simple_majority_voting_sc
 from eval_prompt import calculate_metrics, output_mistakes, output_full_metrics
 
 # Util libs
@@ -24,7 +25,8 @@ def evaluate_final_answer(model : object, tokenizer : object, decoded_outputs : 
     return cotlabel_2_binarylabel([decoded_final_output])    
 
             
-def inference(model : object, tokenizer : object, queries : dict, majority_eval_prompt_skeleton: str, k=40, p=1, temp=0.7, reasoning_paths=8) -> dict:
+def inference(model : object, tokenizer : object, queries : dict, majority_eval_prompt_skeleton: str, k=40, p: float = 1,
+              temp: float = 0.7, reasoning_paths: int = 10, majority_voting: str = None) -> dict:
     res_labels = {}
     with torch.inference_mode():
         for q_id in tqdm(queries):
@@ -32,25 +34,33 @@ def inference(model : object, tokenizer : object, queries : dict, majority_eval_
             tokenized["input_ids"] = tokenized.input_ids.to(device="cuda")
             tokenized["attention_mask"] = tokenized.attention_mask.to(device="cuda")
                         
-            outputs =  model.generate(**tokenized, max_new_tokens=200, temperature = temp, top_k = k, do_sample=True,
+            outputs =  model.generate(**tokenized, max_new_tokens=1000, temperature = temp, top_k = k, do_sample=True,
                                       pad_token_id=tokenizer.eos_token_id, num_return_sequences=reasoning_paths)
-            
+                    
             decoded_output= {}
             current_labels = []
             for i in range(reasoning_paths):
                 decoded_output[i] = tokenizer.decode(outputs[i][tokenized["input_ids"].shape[1]:]).strip()
                 current_labels.append([decoded_output[i]])
             
-            res_labels[q_id] = evaluate_final_answer(model, tokenizer, decoded_output, majority_eval_prompt_skeleton)
+            if majority_voting:
+                if majority_voting == "simple":
+                    res_labels[q_id] = simple_majority_voting_sc(list(set(current_labels)))
+                elif majority_voting == "complex":
+                    res_labels[q_id] = complex_majority_voting_sc(list(set(current_labels)))
+            else:
+                res_labels[q_id] = evaluate_final_answer(model, tokenizer, decoded_output, majority_eval_prompt_skeleton)
                 
     return res_labels
 
 
-def self_consistency(model: object, tokenizer: object, queries: dict, qrels: dict, prompt_id : str, prompt: str, majority_eval_prompt: str, args : object, used_set : str) -> dict:
+def self_consistency(model: object, tokenizer: object, queries: dict, qrels: dict, prompt_id : str, 
+                     prompt: str, majority_eval_prompt: str, args : object, used_set : str, majority_voting: str) -> dict:
     # Replace prompt with query info
     queries_dict = create_qid_prompt_label_dict(queries, qrels, prompt)
     
-    pred_labels = inference(model, tokenizer, queries_dict, majority_eval_prompt, k=args.top_k, p=args.top_p, temp=args.temperature, reasoning_paths=args.reasoning_paths)
+    pred_labels = inference(model, tokenizer, queries_dict, majority_eval_prompt, k=args.top_k, p=args.top_p, 
+                            temp=args.temperature, reasoning_paths=args.reasoning_paths, majority_voting=majority_voting)
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
 

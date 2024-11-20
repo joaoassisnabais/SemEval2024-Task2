@@ -51,7 +51,7 @@ def main():
     parser.add_argument('--no-merge', dest='merge', action='store_true', help='boolean flag to set if model is merging')
     parser.set_defaults(merge=False)
 
-    parser.add_argument('--checkpoint', type=str, help='path to model checkpoint, used if merging', default="models/run_3_llama/end_model")
+    parser.add_argument('--checkpoint', type=str, help='path to model checkpoint, used if merging', default="outputs/models/run_3_llama/end_model")
 
     # Path to queries, qrels and prompt files
     parser.add_argument('--used_set', type=str, help='choose which data to use', default="test") # train | dev | test
@@ -76,7 +76,8 @@ def main():
     parser.add_argument('--top_k', type=int, help='top k to use in inference', default=40)
     parser.add_argument('--top_p', type=float, help='p to use in nucleus sampling', default=0)
     parser.add_argument('--temperature', type=float, help='temperature to use in inference', default=0.7)
-    parser.add_argument('--reasoning_paths', type=int, help='number of reasoning paths to use', default=8)
+    parser.add_argument('--reasoning_paths', type=int, help='number of reasoning paths to use', default=10)
+    parser.add_argument('--majority_voting', type=str, help='boolean flag to set if we should use majority voting', choices=['simple', 'complex'])
 
     # Output directory
     parser.add_argument('--output_dir', type=str, help='path to output_dir', default="outputs/")
