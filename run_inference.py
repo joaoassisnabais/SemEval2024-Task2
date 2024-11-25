@@ -68,7 +68,7 @@ def main():
     parser.add_argument('--task', type=str, help='task to run', default='self_consistency', choices=['output_labels', 'evaluate', 'self_consistency'])
     
     # Prompt arguments
-    parser.add_argument('--prompt_id', type=str, help='prompt id to use', default='self_consistency', choices=['best_combination', 'self_consistency'])
+    parser.add_argument('--prompt_id', type=str, help='prompt id to use', default='self_consistency_2', choices=['best_combination', 'self_consistency', 'self_consistency_2'])
     parser.add_argument('--constraint_decoding', action='store_true', help='boolean flag to set if we should use constraint decoding')
     parser.set_defaults(constraint_decoding=False)
     
