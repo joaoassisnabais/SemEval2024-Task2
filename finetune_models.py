@@ -39,7 +39,7 @@ def parse_args():
     parser.add_argument('--run', type=int, default="0", help='run number for wandb logging')
 
     # I/O paths for models, CT, queries and qrels
-    parser.add_argument('--save_dir', type=str, default="outputs/models/run_4_llama/", help='path to model save dir')
+    parser.add_argument('--save_dir', type=str, default="outputs/models/run_5_llama/", help='path to model save dir')
     parser.add_argument("--used_prompt", default="prompts/llamaPrompts.json", type=str)
     parser.add_argument("--queries", default="queries/", type=str)
     parser.add_argument("--qrels", default="qrels/", type=str)

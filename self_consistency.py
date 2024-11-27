@@ -23,7 +23,6 @@ def evaluate_final_answer(model : object, tokenizer : object, decoded_outputs : 
     decoded_final_output = tokenizer.decode(final_outputs[0][tokenized["input_ids"].shape[1]:]).strip()
 
     return cotlabel_2_binarylabel([decoded_final_output])    
-
             
 def inference(model : object, tokenizer : object, queries : dict, majority_eval_prompt_skeleton: str, k=40, p: float = 1,
               temp: float = 0.7, reasoning_paths: int = 10, majority_voting: str = None) -> dict:
@@ -47,7 +46,18 @@ def inference(model : object, tokenizer : object, queries : dict, majority_eval_
                 if majority_voting == "simple":
                     res_labels[q_id] = simple_majority_voting_sc(current_labels)
                 elif majority_voting == "complex":
-                    res_labels[q_id] = complex_majority_voting_sc(current_labels)
+                    decided = complex_majority_voting_sc(current_labels, reasoning_paths)
+                    for _ in range(10):
+                        if decided[0]:
+                            break
+                        outputs =  model.generate(**tokenized, max_new_tokens=400, temperature = temp, top_k = k, do_sample=True,
+                                      pad_token_id=tokenizer.eos_token_id, num_return_sequences=reasoning_paths)
+                        for i in range(reasoning_paths):
+                            decoded_output[i] = tokenizer.decode(outputs[i][tokenized["input_ids"].shape[1]:]).strip()
+                            current_labels.append(decoded_output[i])
+                        decided = complex_majority_voting_sc(current_labels, reasoning_paths)
+                    
+                    res_labels[q_id] = decided[1]
             else:
                 res_labels[q_id] = evaluate_final_answer(model, tokenizer, decoded_output, majority_eval_prompt_skeleton)
                 

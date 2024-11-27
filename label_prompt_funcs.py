@@ -1,6 +1,7 @@
 import json
 import re
 import collections
+from typing import Tuple
 
 # Local Files
 from utils import safe_open_w
@@ -50,7 +51,12 @@ def simple_majority_voting_sc(cot_labels: list[int]) -> int:
     predicted_label_major = most_common(predicted_labels)  
     return 1 if predicted_label_major == 'Entailment' else 0
 
-def complex_majority_voting_sc(cot_labels: list[str], reasoning_paths: int) -> int:
+"""
+Complex Majority Voting for Self-Consistency:
+Checks if the majority label is at least 1 more than the second most common label and
+guarantee that at least 80% of the reasoning paths are not neutral
+"""
+def complex_majority_voting_sc(cot_labels: list[str], reasoning_paths: int) -> Tuple[bool, int]:
     decided = False
     
     predicted_labels = get_label_from_cot(cot_labels)
@@ -67,10 +73,9 @@ def complex_majority_voting_sc(cot_labels: list[str], reasoning_paths: int) -> i
         elif other_label not in d:
             decided = True
         
-        return 1 if predicted_label_major == 'Entailment' else 0
+        return (decided,1) if predicted_label_major == 'Entailment' else (decided,0)
 
-    #TODO: if it is not decided, rerun with a different seed until it is decided
-    return 1 
+    return (decided, 0)
 
 def label_2_SemEval2024(labels : dict) -> dict:
     return {q_id : {"Prediction" : "Entailment" if labels[q_id] == 1 else "Contradiction"} for q_id in labels}
