@@ -3,6 +3,7 @@ import json
 import torch
 import os
 
+
 # Local files
 import eval_prompt
 from llama_inference import llama_tasks
@@ -46,7 +47,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     # Model and checkpoint paths, including a merging flag
-    parser.add_argument('--model', type=str, help='name of the model used to generate and combine prompts', default='llama', choices=['mistral', 'llama', 'biomistral', 'mellama']) #'meta-llama/Meta-Llama-3-8B-Instruct', 'mistralai/Mistral-7B-Instruct-v0.2', 'BioMistral/BioMistral-7B'
+    parser.add_argument('--model', type=str, help='name of the model used to generate and combine prompts', default='llama', choices=['mistral', 'llama', 'biomistral', 'llama-70B']) #'meta-llama/Meta-Llama-3-8B-Instruct', 'mistralai/Mistral-7B-Instruct-v0.2', 'BioMistral/BioMistral-7B'
     parser.add_argument('--merge', dest='merge', action='store_true', help='boolean flag to set if model is merging')
     parser.add_argument('--no-merge', dest='merge', action='store_true', help='boolean flag to set if model is merging')
     parser.set_defaults(merge=False)
@@ -95,7 +96,7 @@ def main():
             args.prompts = "prompts/MistralPrompts.json"
     
     elif args.model == "llama":
-        args.model = 'meta-llama/Meta-Llama-3-8B-Instruct'
+        args.model = 'meta-llama/Meta-Llama-3.1-8B-Instruct'
         if args.prompts == "":
             args.prompts = "prompts/llamaPrompts.json"
             
@@ -103,6 +104,11 @@ def main():
         args.model = 'BioMistral/BioMistral-7B'
         if args.prompts == "":
             args.prompts = "prompts/MistralPrompts.json"
+            
+    elif args.model == "llama-70B":
+        args.model = 'meta-llama/Llama-3.1-70B-Instruct'
+        if args.prompts == "":
+            args.prompts = "prompts/llamaPrompts.json"
         
     else:
         raise ValueError("Model not recognized")
@@ -120,7 +126,7 @@ def main():
     
     logging.set_verbosity_error()
     
-    if args.model == 'meta-llama/Meta-Llama-3-8B-Instruct':
+    if args.model == 'meta-llama/Meta-Llama-3-8B-Instruct' or args.model == 'meta-llama/Llama-3.1-70B-Instruct':
         llama_tasks(args, model, tokenizer, queries, qrels)    
     else:
         mistral_tasks(args, model, tokenizer, queries, qrels)

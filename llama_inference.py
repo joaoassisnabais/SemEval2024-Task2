@@ -1,5 +1,3 @@
-import json
-
 # Local Files
 import self_consistency
 from eval_prompt import full_evaluate_prompt, output_prompt_labels

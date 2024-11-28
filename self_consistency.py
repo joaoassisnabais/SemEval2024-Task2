@@ -10,6 +10,7 @@ from eval_prompt import calculate_metrics, output_mistakes, output_full_metrics
 # Util libs
 from datetime import datetime
 from tqdm import tqdm
+import logging
 
 def evaluate_final_answer(model : object, tokenizer : object, decoded_outputs : list[str], majority_eval_prompt_skeleton) -> int:
     majority_eval_prompt = create_majority_eval_prompt(decoded_outputs, majority_eval_prompt_skeleton)
@@ -36,33 +37,32 @@ def inference(model : object, tokenizer : object, queries : dict, majority_eval_
             outputs =  model.generate(**tokenized, max_new_tokens=400, temperature = temp, top_k = k, do_sample=True,
                                       pad_token_id=tokenizer.eos_token_id, num_return_sequences=reasoning_paths)
                     
-            decoded_output= {}
-            current_labels = []
+            decoded_outputs = []
             for i in range(reasoning_paths):
-                decoded_output[i] = tokenizer.decode(outputs[i][tokenized["input_ids"].shape[1]:]).strip()
-                current_labels.append(decoded_output[i])
+                decoded_outputs.append(tokenizer.decode(outputs[i][tokenized["input_ids"].shape[1]:]).strip())
             
             if majority_voting:
                 if majority_voting == "simple":
-                    res_labels[q_id] = simple_majority_voting_sc(current_labels)
+                    res_labels[q_id] = simple_majority_voting_sc(decoded_outputs)
                 elif majority_voting == "complex":
-                    decided = complex_majority_voting_sc(current_labels, reasoning_paths)
+                    decided = complex_majority_voting_sc(decoded_outputs, reasoning_paths)
                     for _ in range(10):
                         if decided[0]:
                             break
                         outputs =  model.generate(**tokenized, max_new_tokens=400, temperature = temp, top_k = k, do_sample=True,
                                       pad_token_id=tokenizer.eos_token_id, num_return_sequences=reasoning_paths)
                         for i in range(reasoning_paths):
-                            decoded_output[i] = tokenizer.decode(outputs[i][tokenized["input_ids"].shape[1]:]).strip()
-                            current_labels.append(decoded_output[i])
-                        decided = complex_majority_voting_sc(current_labels, reasoning_paths)
+                            decoded_outputs.append(tokenizer.decode(outputs[i][tokenized["input_ids"].shape[1]:]).strip())
+                        decided = complex_majority_voting_sc(decoded_outputs, reasoning_paths)
                     
                     res_labels[q_id] = decided[1]
             else:
-                res_labels[q_id] = evaluate_final_answer(model, tokenizer, decoded_output, majority_eval_prompt_skeleton)
+                res_labels[q_id] = evaluate_final_answer(model, tokenizer, decoded_outputs, majority_eval_prompt_skeleton)
+                
+            # Log the model outputs and labels
+            logging.info(f'query_id: {q_id}, model_output: {decoded_outputs}, label: {res_labels[q_id]}')
                 
     return res_labels
-
 
 def self_consistency(model: object, tokenizer: object, queries: dict, qrels: dict, prompt_id : str, 
                      prompt: str, majority_eval_prompt: str, args : object, used_set : str, majority_voting: str) -> dict:
