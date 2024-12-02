@@ -10,7 +10,6 @@ from eval_prompt import calculate_metrics, output_mistakes, output_full_metrics
 # Util libs
 from datetime import datetime
 from tqdm import tqdm
-import logging
 
 def evaluate_final_answer(model : object, tokenizer : object, decoded_outputs : list[str], majority_eval_prompt_skeleton) -> int:
     majority_eval_prompt = create_majority_eval_prompt(decoded_outputs, majority_eval_prompt_skeleton)
@@ -58,9 +57,6 @@ def inference(model : object, tokenizer : object, queries : dict, majority_eval_
                     res_labels[q_id] = decided[1]
             else:
                 res_labels[q_id] = evaluate_final_answer(model, tokenizer, decoded_outputs, majority_eval_prompt_skeleton)
-                
-            # Log the model outputs and labels
-            logging.info(f'query_id: {q_id}, model_output: {decoded_outputs}, label: {res_labels[q_id]}')
                 
     return res_labels
 

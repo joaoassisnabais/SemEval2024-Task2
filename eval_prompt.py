@@ -12,7 +12,6 @@ from tqdm import tqdm
 # Model libs
 from sklearn.metrics import f1_score, precision_score, recall_score
 
-
 def prefix_allowed_tokens_fn(batch_id, inputs_ids, tokenizer):
     yes_id = tokenizer.convert_tokens_to_ids("yes")
     no_id = tokenizer.convert_tokens_to_ids("no")
@@ -26,8 +25,9 @@ def prefix_allowed_tokens_fn(batch_id, inputs_ids, tokenizer):
     return allowed_tokens
 
 
-def query_inference(model : object, tokenizer : object, queries : dict, chain_of_thought : str, constraint_decoding = False) -> dict:
+def query_inference(model : object, tokenizer : object, queries : dict, prompt_id : str, constraint_decoding = False) -> dict:
     res_labels = {}
+    full_output = {}
     with torch.inference_mode():
         for q_id in tqdm(queries):
             tokenized = tokenizer(queries[q_id]["text"], return_tensors="pt")
@@ -48,13 +48,14 @@ def query_inference(model : object, tokenizer : object, queries : dict, chain_of
             decoded_output_sub = re.sub(r"<\|[^|]+\|>", " ", decoded_output_sub)    #replace llama tokens with space
             
             # Extract the final answer from the decoded output
-            if chain_of_thought == "self_consistency":    
+            if prompt_id != "best_combination":    
                 final_answer_match = re.search(r"final answer\s*:\s*(\w+)", decoded_output_sub, re.IGNORECASE)
                 if final_answer_match:
                     decoded_output_sub = final_answer_match.group(1)
 
             res_labels[q_id] = textlabel_2_binarylabel(decoded_output_sub.split(" "))
-    return res_labels
+            full_output[q_id] = f"###Output: {decoded_output}\n###Label: {res_labels[q_id]}"
+    return res_labels, full_output
 
 def calculate_metrics(pred_labels : dict, gold_labels : dict) -> dict:
     res_labels = [[],[]]
@@ -119,8 +120,8 @@ def full_evaluate_prompt(model: object, tokenizer: object, queries: dict, qrels:
     # Replace prompt with query info
     queries_dict = create_qid_prompt_label_dict(queries, qrels, prompt)
 
-    # 0-shot inference from queries TODO
-    pred_labels = query_inference(model, tokenizer, queries_dict, args.prompt_id, args.constraint_decoding)
+    # Inference from queries 
+    pred_labels, full_outputs = query_inference(model, tokenizer, queries_dict, args.prompt_id, args.constraint_decoding)
 
     # Compute metrics
     metrics, mistakes = calculate_metrics(pred_labels, queries_dict)
@@ -132,6 +133,10 @@ def full_evaluate_prompt(model: object, tokenizer: object, queries: dict, qrels:
     # Output results
     with safe_open_w(f'{args.output_dir}{timestamp}_{used_set}-set.json') as output_file:
         output_file.write(json.dumps(label_2_SemEval2024(pred_labels), ensure_ascii=False, indent=4))
+        
+    if args.pompt_id != "best_combination":
+        with safe_open_w(f'{args.output_dir}{timestamp}_{used_set}-set_full_output.json') as output_file:
+            output_file.write(json.dumps(full_outputs, ensure_ascii=False, indent=4))
     
     return metrics
 

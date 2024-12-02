@@ -3,7 +3,6 @@ import json
 import torch
 import os
 
-
 # Local files
 import eval_prompt
 from llama_inference import llama_tasks
@@ -42,6 +41,7 @@ def init_model(args):
     tokenizer.pad_token_id = tokenizer.eos_token_id
     
     return model, tokenizer
+
 
 def main():
     parser = argparse.ArgumentParser()
