@@ -106,7 +106,7 @@ def main():
             args.prompts = "prompts/MistralPrompts.json"
             
     elif args.model == "llama-70B":
-        args.model = 'meta-llama/Llama-3.1-70B-Instruct'
+        args.model = 'neuralmagic/Meta-Llama-3.1-70B-Instruct-quantized.w4a16'
         if args.prompts == "":
             args.prompts = "prompts/llamaPrompts.json"
         
@@ -126,7 +126,7 @@ def main():
     
     logging.set_verbosity_error()
     
-    if args.model == 'meta-llama/Meta-Llama-3-8B-Instruct' or args.model == 'meta-llama/Llama-3.1-70B-Instruct':
+    if args.model == 'meta-llama/Meta-Llama-3-8B-Instruct' or args.model == 'neuralmagic/Meta-Llama-3.1-70B-Instruct-quantized.w4a16':
         llama_tasks(args, model, tokenizer, queries, qrels)    
     else:
         mistral_tasks(args, model, tokenizer, queries, qrels)
