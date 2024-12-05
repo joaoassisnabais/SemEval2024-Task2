@@ -117,7 +117,7 @@ def main():
 
     wandb.init(
         project="SemEval_Llama",
-        name = f'{args.model_name}/{args.exp_name}/run-{args.save_dir.split("/")[2]}',
+        name = f'{args.model_name}/{args.exp_name}/{args.save_dir.split("/")[2]}',
         group = f'{args.model_name}/{args.exp_name}',
         config = { arg : getattr(args, arg) for arg in vars(args)}
     )
@@ -151,7 +151,7 @@ def main():
         gradient_checkpointing= args.gradient_checkpointing,
         fp16= args.fp16,
         report_to="wandb"
-    )    
+    )
 
     ## Data collator for completing with "YES" or "NO"
     #sep_tokens = tokenizer.encode("\n<|start_header_id|>assistant<|end_header_id|>")[2:]
