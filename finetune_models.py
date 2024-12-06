@@ -15,9 +15,9 @@ from label_prompt_funcs import init_llama_prompt
 from datasets.arrow_dataset import Dataset
 
 # Model Libs
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, AutoTokenizer, TrainingArguments
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, AutoTokenizer
 from peft import LoraConfig, prepare_model_for_kbit_training, get_peft_model
-from trl import SFTTrainer, DataCollatorForCompletionOnlyLM
+from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 
 def preprocess_dataset(args : argparse, prompt : str , split : str):
     # Load JSON
@@ -130,10 +130,10 @@ def main():
     train_dataset = preprocess_dataset(args, prompt, "train-manual-expand_and_dev")
     eval_dataset = preprocess_dataset(args, prompt, "dev")
 
-    training_arguments = TrainingArguments(
+    training_arguments = SFTConfig(
         output_dir = args.save_dir,
         overwrite_output_dir=True,
-        evaluation_strategy="epoch",
+        eval_strategy="epoch",
         save_strategy="epoch",
         save_total_limit= 5,
         num_train_epochs = args.train_epochs,
@@ -150,6 +150,10 @@ def main():
         gradient_accumulation_steps= args.gradient_accumulation_steps,
         gradient_checkpointing= args.gradient_checkpointing,
         fp16= args.fp16,
+        #Language model parameters
+        max_seq_length= args.max_length,
+        dataset_text_field= "text",
+        #Save and logging parameters
         report_to="wandb"
     )
 
@@ -170,8 +174,6 @@ def main():
         train_dataset= train_dataset,
         eval_dataset= eval_dataset,
         peft_config= peft_config,
-        max_seq_length= args.max_length,
-        dataset_text_field= "text",
         tokenizer= tokenizer,
         args= training_arguments,
         packing= False,
