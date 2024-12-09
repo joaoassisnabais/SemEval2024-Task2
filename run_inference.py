@@ -2,6 +2,7 @@ import argparse
 import json
 import torch
 import os
+import re
 
 # Local files
 import eval_prompt
@@ -47,12 +48,12 @@ def main():
     parser = argparse.ArgumentParser()
 
     # Model and checkpoint paths, including a merging flag
-    parser.add_argument('--model', type=str, help='name of the model used to generate and combine prompts', default='llama', choices=['mistral', 'llama', 'biomistral', 'llama-70B']) #'meta-llama/Meta-Llama-3-8B-Instruct', 'mistralai/Mistral-7B-Instruct-v0.2', 'BioMistral/BioMistral-7B'
+    parser.add_argument('--model', type=str, help='name of the model used to generate and combine prompts', default='llama', choices=['mistral', 'llama', 'biomistral', 'llama-70B', 'llama31']) #'meta-llama/Meta-Llama-3-8B-Instruct', 'mistralai/Mistral-7B-Instruct-v0.2', 'BioMistral/BioMistral-7B'
     parser.add_argument('--merge', dest='merge', action='store_true', help='boolean flag to set if model is merging')
     parser.add_argument('--no-merge', dest='merge', action='store_true', help='boolean flag to set if model is merging')
     parser.set_defaults(merge=False)
 
-    parser.add_argument('--checkpoint', type=str, help='path to model checkpoint, used if merging', default="outputs/models/run_3_llama/end_model")
+    parser.add_argument('--checkpoint', type=str, help='path to model checkpoint, used if merging', default="outputs/models/run_1_llama3.1/end_model")
 
     # Path to queries, qrels and prompt files
     parser.add_argument('--used_set', type=str, help='choose which data to use', default="test") # train | dev | test
@@ -90,16 +91,23 @@ def main():
 
     cuda_available()
     
+    is_llama = re.match(r"llama", args.model)
+    
     if args.model == "mistral":
         args.model = 'mistralai/Mistral-7B-Instruct-v0.2'
         if args.prompts == "":
             args.prompts = "prompts/MistralPrompts.json"
     
     elif args.model == "llama":
-        args.model = 'meta-llama/Meta-Llama-3.1-8B-Instruct'
+        args.model = 'meta-llama/Meta-Llama-3-8B-Instruct'
         if args.prompts == "":
             args.prompts = "prompts/llamaPrompts.json"
             
+    elif args.model == "llama31":
+        args.model = 'meta-llama/Meta-Llama-3.1-8B-Instruct'
+        if args.prompts == "":
+            args.prompts = "prompts/llamaPrompts.json"
+    
     elif args.model == "biomistral":
         args.model = 'BioMistral/BioMistral-7B'
         if args.prompts == "":
@@ -126,7 +134,7 @@ def main():
     
     logging.set_verbosity_error()
     
-    if args.model == 'meta-llama/Meta-Llama-3-8B-Instruct' or args.model == 'neuralmagic/Meta-Llama-3.1-70B-Instruct-quantized.w4a16':
+    if is_llama:
         llama_tasks(args, model, tokenizer, queries, qrels)    
     else:
         mistral_tasks(args, model, tokenizer, queries, qrels)
