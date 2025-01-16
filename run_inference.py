@@ -13,6 +13,7 @@ from mistral_inference import mistral_tasks
 from transformers import AutoTokenizer, AutoModelForCausalLM, logging
 from peft import PeftModel
 from utils import cuda_available
+from auto_gptq import exllama_set_max_input_length
 
 def init_model(args):
 
@@ -29,6 +30,15 @@ def init_model(args):
         model = PeftModel.from_pretrained(model, args.checkpoint)
         model = model.merge_and_unload()
         model.to("cuda")
+    
+    if args.model == "neuralmagic/Meta-Llama-3.1-70B-Instruct-quantized.w4a16":
+        model = AutoModelForCausalLM.from_pretrained(
+            args.model, low_cpu_mem_usage=True,
+            return_dict=True,
+            device_map= {"": 0}
+        )
+        model.to("cuda")
+        model = exllama_set_max_input_length(model, max_input_length=8192)
     
     else:
        model = AutoModelForCausalLM.from_pretrained(
@@ -117,7 +127,7 @@ def main():
         args.model = 'neuralmagic/Meta-Llama-3.1-70B-Instruct-quantized.w4a16'
         if args.prompts == "":
             args.prompts = "prompts/llamaPrompts.json"
-        
+                    
     else:
         raise ValueError("Model not recognized")
     
@@ -133,6 +143,9 @@ def main():
     qrels = json.load(open(args.qrels))
     
     logging.set_verbosity_error()
+    
+    os.environ['CUDA_LAUNCH_BLOCKING']="1"
+    os.environ['TORCH_USE_CUDA_DSA'] = "1"
     
     if is_llama:
         llama_tasks(args, model, tokenizer, queries, qrels)    

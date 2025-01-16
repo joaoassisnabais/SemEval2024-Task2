@@ -134,7 +134,7 @@ def full_evaluate_prompt(model: object, tokenizer: object, queries: dict, qrels:
     with safe_open_w(f'{args.output_dir}{timestamp}_{used_set}-set.json') as output_file:
         output_file.write(json.dumps(label_2_SemEval2024(pred_labels), ensure_ascii=False, indent=4))
         
-    if args.pompt_id != "best_combination":
+    if prompt_id != "best_combination":
         with safe_open_w(f'{args.output_dir}{timestamp}_{used_set}-set_full_output.json') as output_file:
             output_file.write(json.dumps(full_outputs, ensure_ascii=False, indent=4))
     
