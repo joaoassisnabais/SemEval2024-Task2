@@ -19,9 +19,17 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from peft import LoraConfig, prepare_model_for_kbit_training, get_peft_model
 from trl import SFTTrainer, SFTConfig, DataCollatorForCompletionOnlyLM
 
-def preprocess_dataset(args : argparse, prompt : str , split : str):
+
+
+
+def preprocess_dataset(args : argparse, prompt : str , split : str) -> Dataset:
+ 
     # Load JSON
-    set_examples = create_qid_prompt_label_dict(json.load(open(f'{args.queries}queries2024_{split}.json')), json.load(open(f'{args.qrels}qrels2024_{split}.json')), prompt)
+    set_examples = create_qid_prompt_label_dict(
+        queries = json.load(open(f'{args.queries}queries2024_{split}.json')),
+        qrels = json.load(open(f'{args.qrels}qrels2024_{split}.json')),
+        prompt = prompt
+        )
     
     set_dict = {"id" : [], "text" : []}
     for q_id in set_examples:
@@ -30,6 +38,22 @@ def preprocess_dataset(args : argparse, prompt : str , split : str):
         label = "ENTAILMENT" if example["gold_label"] == 1 else "CONTRADICTION"
         set_dict["text"].append(f'{example["text"]} Final Answer: {label}')
     return Dataset.from_dict(set_dict)
+
+def preprocess_examples_dataset(args : argparse, prompt : str , split : str) -> Dataset:
+    
+        # Load JSON
+        set_examples = create_qid_prompt_label_dict(
+            queries = json.load(open(f'{args.queries}queries2024_{split}.json')),
+            qrels = json.load(open(f'{args.qrels}qrels2024_{split}.json')),
+            prompt = prompt
+            )
+        
+        set_dict = {"id" : [], "text" : []}
+        for q_id in set_examples:
+            example = set_examples[q_id]
+            set_dict["id"].append(q_id)
+            set_dict["text"].append(f'{example["text"]}')
+        return Dataset.from_dict(set_dict)
 
 def parse_args():
     parser = argparse.ArgumentParser()

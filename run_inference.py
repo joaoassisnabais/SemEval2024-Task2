@@ -66,7 +66,7 @@ def main():
     parser.add_argument('--checkpoint', type=str, help='path to model checkpoint, used if merging', default="outputs/models/run_1_llama3.1/end_model")
 
     # Path to queries, qrels and prompt files
-    parser.add_argument('--used_set', type=str, help='choose which data to use', default="test") # train | dev | test
+    parser.add_argument('--used_set', type=str, help='choose which data to use', default="test") # train | dev | test | train-manual-expand_and_dev
     args = parser.parse_known_args()
     parser.add_argument('--queries', type=str, help='path to queries file', default=f'queries/queries2024_{args[0].used_set}.json')
     parser.add_argument('--qrels', type=str, help='path to qrels file', default=f'qrels/qrels2024_{args[0].used_set}.json')
