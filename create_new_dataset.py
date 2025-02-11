@@ -26,8 +26,10 @@ if mistake_file and cot:
         if qid['q_id'] in cot:
             cot.pop(qid['q_id'])
 
+#for qid in cot:
+#    print(qid)
 
 with open('qrels/2025-01-28_20-23_train-manual-expand_and_dev-cot.json', 'w') as file:
-    json.dump(cot, file, indent=4)
+    file.write(json.dumps(cot, indent=4))
 
     

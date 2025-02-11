@@ -40,7 +40,6 @@ def preprocess_dataset(args : argparse, prompt : str , split : str) -> Dataset:
     return Dataset.from_dict(set_dict)
 
 def preprocess_examples_dataset(args : argparse, prompt : str , split : str) -> Dataset:
-    
         # Load JSON
         set_examples = create_qid_prompt_label_dict(
             queries = json.load(open(f'{args.queries}queries2024_{split}.json')),
@@ -48,11 +47,17 @@ def preprocess_examples_dataset(args : argparse, prompt : str , split : str) -> 
             prompt = prompt
             )
         
+        qrels = json.load(open(f'{args.qrels}2025-01-28_20-23_train-manual-expand_and_dev-cot.json')),
+        qrels_dict = qrels[0] 
         set_dict = {"id" : [], "text" : []}
         for q_id in set_examples:
+            if q_id not in qrels_dict:
+                continue
             example = set_examples[q_id]
             set_dict["id"].append(q_id)
-            set_dict["text"].append(f'{example["text"]}')
+            label = qrels_dict[q_id]
+            set_dict["text"].append(f'{example["text"]} ###Final Answer: {label}')
+        
         return Dataset.from_dict(set_dict)
 
 def parse_args():
@@ -138,7 +143,7 @@ def create_model_and_tokenizer(args : argparse):
 def main():
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
     args = parse_args()
-
+    
     wandb.init(
         project="SemEval_Llama",
         name = f'{args.model_name}/{args.exp_name}/{args.save_dir.split("/")[2]}',
@@ -151,7 +156,7 @@ def main():
 
     # Load dataset and prompt
     prompt = init_llama_prompt(args.used_prompt, "self_consistency_2", tokenizer)
-    train_dataset = preprocess_dataset(args, prompt, "train-manual-expand_and_dev")
+    train_dataset = preprocess_examples_dataset(args, prompt, "train-manual-expand_and_dev")
     eval_dataset = preprocess_dataset(args, prompt, "dev")
 
     training_arguments = SFTConfig(
@@ -183,7 +188,7 @@ def main():
 
     ## Data collator for completing with "YES" or "NO"
     #sep_tokens = tokenizer.encode("\n<|start_header_id|>assistant<|end_header_id|>")[2:]
-    sep_tokens = tokenizer.encode("\nFinal Answer:")[2:]
+    sep_tokens = tokenizer.encode("\n ###Final Answer:")[2:]
     collator = DataCollatorForCompletionOnlyLM(response_template=sep_tokens, tokenizer=tokenizer)
     
     if args.flash_attn:
