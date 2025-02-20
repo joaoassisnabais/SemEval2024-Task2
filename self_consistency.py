@@ -33,7 +33,7 @@ def inference(model : object, tokenizer : object, queries : dict, majority_eval_
             tokenized["input_ids"] = tokenized.input_ids.to(device="cuda")
             tokenized["attention_mask"] = tokenized.attention_mask.to(device="cuda")
                         
-            outputs =  model.generate(**tokenized, max_new_tokens=400, temperature = temp, top_k = k, do_sample=True,
+            outputs =  model.generate(**tokenized, max_new_tokens=2000, temperature = temp, top_k = k, do_sample=True,
                                       pad_token_id=tokenizer.eos_token_id, num_return_sequences=reasoning_paths)
                     
             decoded_outputs = []

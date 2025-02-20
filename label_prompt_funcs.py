@@ -65,7 +65,7 @@ def complex_majority_voting_sc(cot_labels: list[str], reasoning_paths: int) -> T
         counter = collections.Counter(predicted_labels)
         d = dict(counter)
         predicted_label_major = most_common(predicted_labels)
-        labels = ['Entailment', 'Contradiction']
+        labels = ['Entailment', 'Contradiction', 'Neutral']
         labels.pop(labels.index(predicted_label_major))
         other_label = labels[0]
         if other_label in d and d[predicted_label_major] - d[other_label] > 1:

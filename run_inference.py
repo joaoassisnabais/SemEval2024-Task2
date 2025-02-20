@@ -58,12 +58,12 @@ def main():
     parser = argparse.ArgumentParser()
 
     # Model and checkpoint paths, including a merging flag
-    parser.add_argument('--model', type=str, help='name of the model used to generate and combine prompts', default='llama', choices=['mistral', 'llama', 'biomistral', 'llama-70B', 'llama31']) #'meta-llama/Meta-Llama-3-8B-Instruct', 'mistralai/Mistral-7B-Instruct-v0.2', 'BioMistral/BioMistral-7B'
+    parser.add_argument('--model', type=str, help='name of the model used to generate and combine prompts', default='llama31', choices=['mistral', 'llama', 'biomistral', 'llama-70B', 'llama31']) #'meta-llama/Meta-Llama-3-8B-Instruct', 'mistralai/Mistral-7B-Instruct-v0.2', 'BioMistral/BioMistral-7B'
     parser.add_argument('--merge', dest='merge', action='store_true', help='boolean flag to set if model is merging')
     parser.add_argument('--no-merge', dest='merge', action='store_true', help='boolean flag to set if model is merging')
     parser.set_defaults(merge=False)
 
-    parser.add_argument('--checkpoint', type=str, help='path to model checkpoint, used if merging', default="outputs/models/run_1_llama3.1/end_model")
+    parser.add_argument('--checkpoint', type=str, help='path to model checkpoint, used if merging', default="outputs/models/cot_llama3.1_7b/end_model")
 
     # Path to queries, qrels and prompt files
     parser.add_argument('--used_set', type=str, help='choose which data to use', default="test") # train | dev | test | train-manual-expand_and_dev
