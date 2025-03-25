@@ -43,6 +43,22 @@ def get_label_from_cot(cot_label: list[str]) -> int:
             
     return predicted_labels
 
+def get_label_from_cot_strict(cot_label: list[str]) -> int:
+    predicted_labels = []
+    
+    for part in cot_label:      
+        entail = re.search(r'final\s*answer\s*[:]*\s*entailment', part, re.IGNORECASE)
+        contra = re.search(r'final\s*answer\s*[:]*\s*contradiction', part, re.IGNORECASE)
+        neutral = re.search(r'not\s+enough\s+information|inconclusive|undetermined|neutral|undefined|indeterminate', part, re.IGNORECASE) 
+        if entail:
+            predicted_labels.append('Entailment')
+        if contra:
+            predicted_labels.append('Contradiction')
+        if neutral:
+            predicted_labels.append('Neutral')
+            
+    return predicted_labels
+
 def most_common(lst):
     return max(set(lst), key=lst.count)
 
@@ -54,12 +70,12 @@ def simple_majority_voting_sc(cot_labels: list[int]) -> int:
 """
 Complex Majority Voting for Self-Consistency:
 Checks if the majority label is at least 1 more than the second most common label and
-guarantee that at least 80% of the reasoning paths are not neutral
+guarantee that at least 80% of the reasoning paths exist
 """
 def complex_majority_voting_sc(cot_labels: list[str], reasoning_paths: int) -> Tuple[bool, int]:
     decided = False
     
-    predicted_labels = get_label_from_cot(cot_labels)
+    predicted_labels = get_label_from_cot_strict(cot_labels)
     
     if len(predicted_labels) >= int(reasoning_paths * 0.8):
         counter = collections.Counter(predicted_labels)
