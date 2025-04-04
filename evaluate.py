@@ -110,7 +110,7 @@ def main():
     input_dir = 'outputs'
     gold_dir = 'qrels'
     gold_filename = os.path.join(gold_dir, 'qrels2024_test.json')
-    pred_filename = os.path.join(input_dir, '2025-02-27_07-46_test-set.json')
+    pred_filename = os.path.join(input_dir, '2025-03-27_12-12_test-set.json')
     
     output_dir = f'outputs/evaluated/{pred_filename.split("/")[-1].split(".")[0]}'
 

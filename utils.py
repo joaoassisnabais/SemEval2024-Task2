@@ -88,3 +88,8 @@ def cuda_available() -> None:
             raise torch.cuda.CudaError
     except Exception as e:
         print(f"No CUDA devices available: {e}")
+        
+if __name__ == "__main__":
+    # Example usage
+    dataset_stats("qrels/qrels2024_dev.json")
+    
