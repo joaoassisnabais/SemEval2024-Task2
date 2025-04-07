@@ -1,5 +1,7 @@
 import json
 from transformers import AutoTokenizer
+from collections import Counter
+import matplotlib.pylab as plt
 
 # Define the path to the JSON file
 mistake_file_path = 'outputs/mistakes/2025-01-28_20-23_Meta-Llama-3.1-70B-Instruct-quantized.w4a16_train-manual-expand_and_dev-set.json'
@@ -39,9 +41,22 @@ def avg_qrel_length():
     tokenizer = AutoTokenizer.from_pretrained('meta-llama/Meta-Llama-3.1-8B-Instruct', padding_side="left")
     
     total_sum = 0
+    len_qrels = []
+    # Calculate the average length of the QRELs
     for cot in qrels.values():
         tokens = tokenizer.encode(cot)
         total_sum += len(tokens)
+        len_qrels.append(len(tokens))
+    
+    c_qrels = Counter(len_qrels)
+    list_x = list(c_qrels.keys())
+    list_y = list(c_qrels.values())
+    
+    plt.bar(list_x, list_y)
+    plt.xlabel('Length of QRELs')
+    plt.ylabel('Count')
+    plt.title('Distribution of QREL Lengths')
+    plt.show()
     
     avg_length = total_sum / len(qrels)
     print(f"Average QREL length: {avg_length}")

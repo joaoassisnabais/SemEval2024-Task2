@@ -24,8 +24,16 @@ def dataset_stats(dataset_path : str) -> None:
 
     for query in dataset:
         for stat in ["Type", "Section_id", "Intervention", "Label"]:
-            if stat in dataset[query]:
-                types[dataset[query][stat]] += 1
+        
+        if "Type" in dataset[query]:
+            types[dataset[query]["Type"]] += 1
+
+        if "Section_id" in dataset[query]:
+            sections[dataset[query]["Section_id"]] += 1
+        
+        if "Intervention" in dataset[query]:
+            interventions_done[dataset[query]["Intervention"]] += 1
+
 
         if "Causal_type" in dataset[query]:
             type_of_intervention[dataset[query]["Causal_type"][0]] += 1
