@@ -48,18 +48,21 @@ def avg_qrel_length():
         total_sum += len(tokens)
         len_qrels.append(len(tokens))
     
+    len_qrels.sort()
     c_qrels = Counter(len_qrels)
     list_x = list(c_qrels.keys())
     list_y = list(c_qrels.values())
     
     plt.bar(list_x, list_y)
-    plt.xlabel('Length of QRELs')
+    plt.xlabel('Length of QRELs (in tokens)')
+    plt.grid()
     plt.ylabel('Count')
     plt.title('Distribution of QREL Lengths')
-    plt.show()
-    
+
     avg_length = total_sum / len(qrels)
     print(f"Average QREL length: {avg_length}")
+
+    
     
 
 if __name__ == "__main__":
