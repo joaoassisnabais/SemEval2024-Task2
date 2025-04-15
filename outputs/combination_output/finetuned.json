@@ -1,0 +1,28 @@
+{
+    "timestamp": "2024-03-27_10-53",
+    "model": "mistralai/Mistral-7B-Instruct-v0.2",
+    "merge": false,
+    "checkpoint": "",
+    "used_set": "test",
+    "queries": "queries/queries2024_test.json",
+    "qrels": "qrels/qrels2024_test.json",
+    "prompts": "prompts/MistralPrompts.json",
+    "metrics_only": true,
+    "labels": "outputs/normal/2024-03-21_21-28_test-set.json",
+    "task": "output_labels",
+    "output_dir": "outputs/",
+    "prompt": "<s>[INST]The objective is to examine semantic entailment relationships between individual sections of Clinical Trial Reports (CTRs) and statements articulated by clinical domain experts. CTRs elaborate on the procedures and findings of clinical trials, scrutinizing the effectiveness and safety of novel treatments. Each trial involves cohorts or arms exposed to distinct treatments or exhibiting diverse baseline characteristics. Comprehensive CTRs comprise four sections: (1) ELIGIBILITY CRITERIA delineating conditions for patient inclusion, (2) INTERVENTION particulars specifying type, dosage, frequency, and duration of treatments, (3) RESULTS summary encompassing participant statistics, outcome measures, units, and conclusions, and (4) ADVERSE EVENTS cataloging signs and symptoms observed. Statements posit claims regarding the information within these sections, either for a single CTR or in comparative analysis of two. To establish entailment, the statement's assertion should harmonize with clinical trial data, find substantiation in the CTR, and avoid contradiction with the provided descriptions.\n\nThe following descriptions correspond to the information in one of the Clinical Trial Report (CTR) sections.\n\nPrimary Trial:\n$primary_evidence\n\nSecondary Trial:\n$secondary_evidence\n\nReflect upon the ensuing statement crafted by an expert in clinical trials.\n\n$hypothesis\n\nRespond with either YES or NO to indicate whether it is possible to determine the statement's validity based on the Clinical Trial Report (CTR) information, with the statement being supported by the CTR data and not contradicting the provided descriptions.[/INST] Answer: ",
+    "set": "test",
+    "metrics": {
+        "precison_bin": 0.5878853434288804,
+        "precison_micro": 0.7243636363636363,
+        "precision_macro": 0.690683290722931,
+        "recall_bin": 0.5904399782726779,
+        "recall_micro": 0.7243636363636363,
+        "recall_macro": 0.6910931785323489,
+        "f1_bin": 0.5891598915989159,
+        "f1_micro": 0.7243636363636363,
+        "f1_macro": 0.6908863753480216
+    },
+    "formated_metrics": "| Mistral-7B-Instruct-v0.2-best_combination_prompt   | 0.6908863753480216 | 0.690683290722931 | 0.6910931785323489 | - |"
+}

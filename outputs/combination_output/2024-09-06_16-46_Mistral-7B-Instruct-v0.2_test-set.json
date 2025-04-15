@@ -1,0 +1,33 @@
+{
+    "timestamp": "2024-09-06_16-46",
+    "model": "mistralai/Mistral-7B-Instruct-v0.2",
+    "merge": false,
+    "checkpoint": "",
+    "used_set": "test",
+    "queries": "queries/queries2024_test.json",
+    "qrels": "qrels/qrels2024_test.json",
+    "prompts": "prompts/MistralPrompts.json",
+    "metrics_only": false,
+    "labels": "",
+    "task": "self_consistency",
+    "top_k": 40,
+    "top_p": 0,
+    "temperature": 0.7,
+    "reasoning_paths": 20,
+    "output_dir": "outputs/",
+    "attention_type": "normal",
+    "prompt": "<s>[INST]SYSTEM: The objective is to examine semantic entailment relationships between individual sections of Clinical Trial Reports (CTRs) and statements articulated by clinical domain experts. CTRs elaborate on the procedures and findings of clinical trials, scrutinizing the effectiveness and safety of novel treatments. Each trial involves cohorts or arms exposed to distinct treatments or exhibiting diverse baseline characteristics. Comprehensive CTRs comprise four sections: (1) ELIGIBILITY CRITERIA delineating conditions for patient inclusion, (2) INTERVENTION particulars specifying type, dosage, frequency, and duration of treatments, (3) RESULTS summary encompassing participant statistics, outcome measures, units, and conclusions, and (4) ADVERSE EVENTS cataloguing signs and symptoms observed. Statements posit claims regarding the information within these sections, either for a single CTR or in comparative analysis of two. To establish entailment, the statement's assertion should harmonize with clinical trial data, find substantiation in the CTR, and avoid contradiction with the provided descriptions.\n\nThe following descriptions correspond to the information in one of the Clinical Trial Report (CTR) sections.\n\nPrimary Trial: $primary_evidence\n\nSecondary Trial (Optional): $secondary_evidence\n\nReflect on the statement by the clinical trial expert: $hypothesis\nWhat is it claiming about the trials or their results?\nLook for information within the relevant CTR(s) section that directly supports the claim made in the expert statement.\nEnsure there are no details in the CTR descriptions that contradict the expert statement.\n\nOUTPUT: binary_output_format[/INST]\n\nAnswer:</s>",
+    "set": "test",
+    "metrics": {
+        "precison_bin": 0.3347272727272727,
+        "precison_micro": 0.3347272727272727,
+        "precision_macro": 0.16736363636363635,
+        "recall_bin": 1.0,
+        "recall_micro": 0.3347272727272727,
+        "recall_macro": 0.5,
+        "f1_bin": 0.5015665440675657,
+        "f1_micro": 0.3347272727272727,
+        "f1_macro": 0.25078327203378287
+    },
+    "formated_metrics": "| Mistral-7B-Instruct-v0.2-self_consistency_prompt   | 0.25078327203378287 | 0.16736363636363635 | 0.5 | - |"
+}
