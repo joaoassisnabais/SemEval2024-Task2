@@ -1,9 +1,8 @@
 # SemEval2024-Task2
 
-A repository that contains public code which was used to submit runs to SemEval2024, specifically in the context of [Task 2: Safe Biomedical Natural Language Inference for Clinical Trials](https://sites.google.com/view/nli4ct/). This is the full implementation of the system we submitted to the [Task Leaderboards of the post competion task]([https://codalab.lisn.upsaclay.fr/competitions/16190#results](https://codalab.lisn.upsaclay.fr/competitions/16190?secret_key=4863f655-9dd6-43f0-b710-f17cb67af607#results)) under the username "nabais".
+A repository that contains public code which was used to submit runs to SemEval2024, specifically in the context of [Task 2: Safe Biomedical Natural Language Inference for Clinical Trials](https://sites.google.com/view/nli4ct/). This is the full implementation of the system submitted to the [Task Leaderboards of the post competion task]([https://codalab.lisn.upsaclay.fr/competitions/16190#results](https://codalab.lisn.upsaclay.fr/competitions/16190?secret_key=4863f655-9dd6-43f0-b710-f17cb67af607#results)) under the username "nabais".
 
-
-In order to fully understand the scope of our work, we recommend reading my System Paper which will be available soon
+In order to fully understand the scope of the work, we recommend reading the dissertation or the extended abstract which will soon be available here.
 
 ## Repository Setup
 
